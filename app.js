@@ -17,6 +17,10 @@ function showToast(message) {
 
 function closeTransientUi() {
   if (activeDialog) closeDialog({ restoreFocus: false });
+  if (productDetailOpen) {
+    productReturnSearch = "";
+    closeProductDetail({ restoreFocus: false, updateHistory: false });
+  }
 }
 
 function activatePage(page, options = {}) {
@@ -82,16 +86,49 @@ const productEmpty = document.querySelector("#productEmpty");
 let activeHomeIp = "全部IP";
 let activeHomeChannel = "推荐";
 
+const productProfiles = [
+  { stock: 86, sold: 286, material: "特种纸收藏卡、哑光覆膜", size: "约 88 × 63 mm", package: "独立密封包装", description: "炎柱主题随机收藏卡包，包含角色立绘与特别工艺卡面。" },
+  { stock: 42, sold: 184, material: "高透亚克力、烫金工艺", size: "约 70 × 100 mm", package: "防刮膜＋独立纸盒", description: "限定鎏金亚克力收藏砖，适合桌面陈列与角色收藏。" },
+  { stock: 64, sold: 521, material: "马口铁、覆膜印刷", size: "直径约 58 mm", package: "三枚套组独立卡装", description: "祢豆子软萌主题徽章套组，一套包含三款角色表情。" },
+  { stock: 120, sold: 238, material: "黑色高透亚克力", size: "高约 150 mm", package: "底座＋主体保护袋", description: "罗小黑黑金系列预售立牌，采用半透叠色与金属质感印刷。" },
+  { stock: 126, sold: 97, material: "PET 胶片、局部光油", size: "约 90 × 55 mm", package: "独立防潮袋", description: "纸房子胶片风收藏卡，逆光可呈现通透画面层次。" },
+  { stock: 72, sold: 166, material: "锌合金、烤漆", size: "主体约 45 mm", package: "独立吊卡包装", description: "夜行主题金属挂件，适合包袋装饰或角色收藏。" },
+  { stock: 0, sold: 612, material: "马口铁、亮膜", size: "直径约 58 mm", package: "独立卡装", description: "水柱果饮主题纪念徽章，补货时间待官方确认。" },
+  { stock: 38, sold: 203, material: "高透亚克力", size: "高约 140 mm", package: "主体＋底座独立保护", description: "恋柱果饮主题预售立牌，支持与同期预售商品合并发货。" },
+];
+
 function productFromCard(card, index = productCards.indexOf(card)) {
+  const profile = productProfiles[index] || productProfiles[0];
+  const unit = card.dataset.kind === "单领" ? "件" : "抽";
+  const directProduct = unit === "件";
+  const basePrice = Number(card.dataset.price);
+  const options = directProduct
+    ? [
+        { id: "standard", label: "标准款", detail: "官方标准包装", price: basePrice, stock: profile.stock },
+        { id: "collector", label: "收藏包装", detail: "加厚保护盒 +¥6", price: basePrice + 6, stock: Math.max(0, Math.min(profile.stock, 24)) },
+      ]
+    : [
+        { id: "single", label: "单包随机款", detail: "每包随机 1 款", price: basePrice, stock: profile.stock },
+        { id: "triple", label: "三包组合", detail: "三包组合立减 ¥2", price: Number((basePrice * 3 - 2).toFixed(1)), stock: Math.floor(profile.stock / 3) },
+      ];
   return {
     id: `product-${index}`,
     name: card.dataset.product,
     ip: card.dataset.ip,
     kind: card.dataset.kind,
     state: card.dataset.state,
-    price: Number(card.dataset.price),
+    price: basePrice,
+    unit,
     shipping: card.dataset.shipping,
     image: card.querySelector("img")?.src || "",
+    stock: profile.stock,
+    sold: profile.sold,
+    material: profile.material,
+    size: profile.size,
+    package: profile.package,
+    description: profile.description,
+    options,
+    maxQty: Math.max(1, Math.min(6, profile.stock || 1)),
     card,
   };
 }
@@ -248,14 +285,17 @@ document.querySelectorAll("[data-pool-sort]").forEach((button) => {
 /* Dialog controller */
 const searchOverlay = document.querySelector("#searchOverlay");
 const sheetBackdrop = document.querySelector("#sheetBackdrop");
-const productSheet = document.querySelector("#productSheet");
+const productDetailView = document.querySelector("#productDetailView");
+const skuSheet = document.querySelector("#skuSheet");
 const checkoutSheet = document.querySelector("#checkoutSheet");
+const orderSuccessSheet = document.querySelector("#orderSuccessSheet");
 const poolSheet = document.querySelector("#poolSheet");
 const drawConfirmSheet = document.querySelector("#drawConfirmSheet");
 const accountSheet = document.querySelector("#accountSheet");
 const drawResult = document.querySelector("#drawResult");
 let activeDialog = null;
 let lastDialogTrigger = null;
+let productDetailOpen = false;
 
 function focusableWithin(element) {
   return [...element.querySelectorAll('button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')].filter(
@@ -264,8 +304,9 @@ function focusableWithin(element) {
 }
 
 function setAppBackgroundInert(value) {
-  scrollView.inert = value;
-  bottomNav.inert = value;
+  scrollView.inert = value || productDetailOpen;
+  bottomNav.inert = value || productDetailOpen;
+  productDetailView.inert = value;
 }
 
 function openDialog(dialog, trigger = document.activeElement) {
@@ -291,14 +332,16 @@ function openDialog(dialog, trigger = document.activeElement) {
 function closeDialog({ restoreFocus = true } = {}) {
   if (!activeDialog) return;
   const closing = activeDialog;
+  const focusTarget = restoreFocus && lastDialogTrigger?.isConnected ? lastDialogTrigger : null;
   activeDialog = null;
   closing.classList.remove("is-open");
-  closing.setAttribute("aria-hidden", "true");
-  closing.hidden = true;
   sheetBackdrop.classList.remove("is-open");
   sheetBackdrop.setAttribute("aria-hidden", "true");
+  if (closing.contains(document.activeElement) && document.activeElement instanceof HTMLElement) document.activeElement.blur();
   setAppBackgroundInert(false);
-  if (restoreFocus && lastDialogTrigger?.isConnected) lastDialogTrigger.focus();
+  focusTarget?.focus();
+  closing.setAttribute("aria-hidden", "true");
+  closing.hidden = true;
   lastDialogTrigger = null;
 }
 
@@ -391,8 +434,9 @@ searchResultList.addEventListener("click", (event) => {
   if (!button) return;
   if (button.dataset.searchProduct) {
     const product = productCatalog.find((item) => item.id === button.dataset.searchProduct);
+    const query = globalSearchInput.value;
     closeDialog({ restoreFocus: false });
-    if (product) openProduct(product.card, product.card);
+    if (product) openProductDetail(product, button, { returnToSearch: query });
   } else if (button.dataset.searchPool) {
     const pool = [...document.querySelectorAll("[data-pool]")][Number(button.dataset.searchPool)];
     closeDialog({ restoreFocus: false });
@@ -402,17 +446,53 @@ searchResultList.addEventListener("click", (event) => {
 });
 
 /* Product, checkout and cart */
-const sheetProductTitle = document.querySelector("#sheetProductTitle");
-const sheetProductImage = document.querySelector("#sheetProductImage");
-const sheetProductState = document.querySelector("#sheetProductState");
-const sheetProductMeta = document.querySelector("#sheetProductMeta");
-const sheetProductPrice = document.querySelector("#sheetProductPrice");
-const sheetCartButton = document.querySelector("[data-sheet-cart]");
-const sheetBuyButton = document.querySelector("[data-sheet-buy]");
+const productDetailScroll = document.querySelector("#productDetailScroll");
+const detailProductImage = document.querySelector("#detailProductImage");
+const detailThumbOne = document.querySelector("#detailThumbOne");
+const detailThumbTwo = document.querySelector("#detailThumbTwo");
+const detailGalleryBadge = document.querySelector("#detailGalleryBadge");
+const detailStateBadge = document.querySelector("#detailStateBadge");
+const detailBrand = document.querySelector("#detailBrand");
+const productDetailTitle = document.querySelector("#productDetailTitle");
+const detailProductPrice = document.querySelector("#detailProductPrice");
+const detailProductUnit = document.querySelector("#detailProductUnit");
+const detailSales = document.querySelector("#detailSales");
+const detailDescription = document.querySelector("#detailDescription");
+const detailSelection = document.querySelector("#detailSelection");
+const detailDelivery = document.querySelector("#detailDelivery");
+const detailNotice = document.querySelector("#detailNotice");
+const detailStoryTitle = document.querySelector("#detailStoryTitle");
+const detailStoryCopy = document.querySelector("#detailStoryCopy");
+const detailStoryImage = document.querySelector("#detailStoryImage");
+const detailSpecIp = document.querySelector("#detailSpecIp");
+const detailSpecMaterial = document.querySelector("#detailSpecMaterial");
+const detailSpecSize = document.querySelector("#detailSpecSize");
+const detailSpecPackage = document.querySelector("#detailSpecPackage");
+const detailPolicyCopy = document.querySelector("#detailPolicyCopy");
+const detailRelatedList = document.querySelector("#detailRelatedList");
+const detailCartButton = document.querySelector(".detail-cart");
+const detailBuyButton = document.querySelector(".detail-buy");
+const skuProductImage = document.querySelector("#skuProductImage");
+const skuProductState = document.querySelector("#skuProductState");
+const skuSheetTitle = document.querySelector("#skuSheetTitle");
+const skuProductMeta = document.querySelector("#skuProductMeta");
+const skuProductPrice = document.querySelector("#skuProductPrice");
+const skuOptionList = document.querySelector("#skuOptionList");
+const skuQuantityText = document.querySelector("#skuQuantity");
+const skuLimitText = document.querySelector("#skuLimitText");
+const skuDeliveryText = document.querySelector("#skuDeliveryText");
+const skuTotal = document.querySelector("#skuTotal");
+const skuConfirmButton = document.querySelector("[data-confirm-sku]");
 const cartList = document.querySelector(".cart-list");
 const cartTotal = document.querySelector("#cartTotal");
 const checkoutSubtotal = document.querySelector("#checkoutSubtotal");
+const checkoutDiscount = document.querySelector("#checkoutDiscount");
 const checkoutTotal = document.querySelector("#checkoutTotal");
+const checkoutProductList = document.querySelector("#checkoutProductList");
+const checkoutCount = document.querySelector("#checkoutCount");
+const checkoutCoupon = document.querySelector("#checkoutCoupon");
+const checkoutAgreement = document.querySelector("#checkoutAgreement");
+const checkoutAddressOptions = document.querySelector("#checkoutAddressOptions");
 const checkoutButton = document.querySelector("[data-open-checkout]");
 const cartManageButton = document.querySelector("[data-cart-manage]");
 const cartPage = document.querySelector("#page-cart");
@@ -420,30 +500,214 @@ let cartManaging = false;
 const checkoutTitle = document.querySelector("#checkoutTitle");
 const selectAllButton = document.querySelector(".select-all");
 let currentProduct = null;
-let checkoutContext = { mode: "cart", total: 0 };
+let currentSku = null;
+let skuQuantity = 1;
+let skuMode = "cart";
+let checkoutContext = { mode: "cart", items: [], subtotal: 0, discount: 0, total: 0 };
 let activeCartFilter = "全部";
+let lastProductTrigger = null;
+let productReturnSearch = "";
 
-function openProduct(card, trigger = card) {
-  currentProduct = productFromCard(card);
-  sheetProductTitle.textContent = currentProduct.name;
-  sheetProductImage.src = currentProduct.image;
-  sheetProductImage.alt = currentProduct.name;
-  sheetProductState.textContent = `${currentProduct.state} · 官方授权`;
-  sheetProductMeta.textContent = `${currentProduct.ip} · ${currentProduct.shipping}`;
-  sheetProductPrice.textContent = `¥${currentProduct.price}`;
-  const unavailable = currentProduct.state === "到货提醒";
-  sheetCartButton.textContent = unavailable ? "订阅到货" : "加入购物车";
-  sheetBuyButton.textContent = unavailable ? "暂未开售" : "立即购买";
-  sheetBuyButton.disabled = unavailable;
-  openDialog(productSheet, trigger);
+function formatMoney(value) {
+  return Number(value.toFixed(2)).toString();
 }
 
+function productStateClass(state) {
+  if (state === "现货" || state === "上新") return "is-stock";
+  if (state === "预售") return "is-presale";
+  if (state === "到货提醒") return "is-reminder";
+  return "is-limited";
+}
+
+function deliveryCopy(product) {
+  if (product.state === "预售") return product.shipping.includes("9 月") ? "预计 9 月下旬开始发货" : "预计 10 月开始发货";
+  if (product.state === "到货提醒") return "补货时间待官方确认";
+  return product.shipping
+    .replace(/48h\s*内发货/, "48 小时内发货")
+    .replace(/48h\s*发货/, "48 小时内发货");
+}
+
+function renderProductDetail(product) {
+  currentProduct = product;
+  currentSku = product.options[0];
+  skuQuantity = 1;
+  const stateLabel = product.state === "上新" ? "现货上新" : product.state;
+  detailProductImage.src = product.image;
+  detailProductImage.alt = product.name;
+  detailThumbOne.src = product.image;
+  detailThumbTwo.src = product.image;
+  detailStoryImage.src = product.image;
+  detailStoryImage.alt = `${product.name}细节展示`;
+  detailGalleryBadge.textContent = `${product.kind} · 官方授权`;
+  detailStateBadge.textContent = stateLabel;
+  detailStateBadge.className = productStateClass(product.state);
+  detailBrand.textContent = `${product.ip} · 正版授权`;
+  productDetailTitle.textContent = product.name;
+  detailProductPrice.textContent = `¥${formatMoney(product.price)}`;
+  detailProductUnit.textContent = `/${product.unit}`;
+  detailSales.textContent = product.stock ? `已售 ${product.sold} · 剩余 ${product.stock} ${product.unit === "件" ? "件" : "抽"}` : `已售 ${product.sold} · 等待补货`;
+  detailDescription.textContent = product.description;
+  detailSelection.textContent = `${currentSku.label} · 1 ${product.unit === "件" ? "件" : "组"}`;
+  detailDelivery.textContent = `上海市徐汇区 · ${deliveryCopy(product)}`;
+  detailStoryTitle.textContent = `${product.ip} · ${product.kind}收藏系列`;
+  detailStoryCopy.textContent = product.description + " 商品采用独立保护包装，减少运输过程中的磨损。";
+  detailSpecIp.textContent = product.ip;
+  detailSpecMaterial.textContent = product.material;
+  detailSpecSize.textContent = product.size;
+  detailSpecPackage.textContent = product.package;
+  if (product.state === "预售") {
+    detailNotice.innerHTML = `<b>预售说明</b><p>${deliveryCopy(product)}。现货与预售商品默认拆单发货，预售截单后非质量问题不支持取消。</p>`;
+    detailPolicyCopy.textContent = "本商品为预售正版授权周边，具体发货时间可能受生产进度影响。截单后不支持无理由取消，质量问题请在签收后 48 小时内联系客服。";
+  } else if (product.state === "到货提醒") {
+    detailNotice.innerHTML = "<b>补货提醒</b><p>当前暂未开售。订阅后可在补货时收到站内提醒，本次订阅不会自动下单。</p>";
+    detailPolicyCopy.textContent = "当前页面仅开放到货提醒。实际售价、库存和发货时间以补货通知及再次确认页面为准。";
+  } else {
+    detailNotice.innerHTML = `<b>现货说明</b><p>${deliveryCopy(product)}，偏远地区时效可能顺延。</p>`;
+    detailPolicyCopy.textContent = "商品为正版授权周边。非质量问题不支持拆封后退换；运输破损请在签收后 48 小时内联系客服并提供开箱凭证。";
+  }
+  const unavailable = product.state === "到货提醒";
+  detailCartButton.textContent = unavailable ? "订阅到货提醒" : "加入购物车";
+  detailBuyButton.textContent = unavailable ? "查看同 IP 商品" : "立即购买";
+  detailRelatedList.innerHTML = productCatalog
+    .filter((item) => item.id !== product.id && (item.ip === product.ip || item.kind === product.kind))
+    .slice(0, 3)
+    .map((item) => `<button type="button" data-related-product="${item.id}"><img src="${item.image}" alt=""><span><strong>${item.name}</strong><small>${item.state} · ¥${formatMoney(item.price)}</small></span></button>`)
+    .join("");
+}
+
+function openProductDetail(product, trigger = product.card, options = {}) {
+  lastProductTrigger = trigger instanceof HTMLElement ? trigger : product.card;
+  productReturnSearch = options.returnToSearch || "";
+  renderProductDetail(product);
+  productDetailOpen = true;
+  productDetailView.hidden = false;
+  scrollView.inert = true;
+  bottomNav.inert = true;
+  productDetailScroll.scrollTop = 0;
+  window.requestAnimationFrame(() => {
+    productDetailView.classList.add("is-open");
+    productDetailView.querySelector("[data-close-product-detail]")?.focus();
+  });
+  if (options.pushHistory !== false) window.history.pushState({ productDetail: product.id }, "", window.location.href);
+}
+
+function closeProductDetail({ restoreFocus = true, updateHistory = true } = {}) {
+  if (!productDetailOpen) return;
+  if (activeDialog) closeDialog({ restoreFocus: false });
+  if (updateHistory && window.history.state?.productDetail) {
+    window.history.back();
+    return;
+  }
+  productDetailOpen = false;
+  productDetailView.classList.remove("is-open");
+  productDetailView.hidden = true;
+  productDetailView.inert = false;
+  scrollView.inert = false;
+  bottomNav.inert = false;
+  if (!updateHistory && window.history.state?.productDetail) window.history.replaceState(null, "", window.location.href);
+  if (productReturnSearch) {
+    const query = productReturnSearch;
+    productReturnSearch = "";
+    openSearch(query, homeSearchInput);
+    runSearch(query);
+  } else if (restoreFocus && lastProductTrigger?.isConnected) lastProductTrigger.focus();
+  lastProductTrigger = null;
+}
+
+document.querySelector("[data-close-product-detail]").addEventListener("click", () => closeProductDetail());
+document.querySelector("[data-detail-share]").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(`${currentProduct.name} · ¥${formatMoney(currentProduct.price)}`);
+    showToast("商品信息已复制");
+  } catch {
+    showToast("当前环境无法复制，请稍后再试");
+  }
+});
+document.querySelector("[data-detail-favorite]").addEventListener("click", (event) => {
+  const selected = event.currentTarget.getAttribute("aria-pressed") !== "true";
+  event.currentTarget.setAttribute("aria-pressed", String(selected));
+  event.currentTarget.textContent = selected ? "♥" : "♡";
+  showToast(selected ? "已收藏到我的收藏" : "已取消收藏");
+});
+document.querySelectorAll("[data-detail-gallery]").forEach((button) => button.addEventListener("click", () => {
+  button.parentElement.querySelectorAll("button").forEach((item) => item.classList.toggle("is-active", item === button));
+  detailProductImage.classList.toggle("show-package", button.dataset.detailGallery === "package");
+}));
+document.querySelectorAll("[data-detail-anchor]").forEach((button) => button.addEventListener("click", () => {
+  button.parentElement.querySelectorAll("button").forEach((item) => item.classList.toggle("is-active", item === button));
+  document.querySelector(`#${button.dataset.detailAnchor}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}));
+detailRelatedList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-related-product]");
+  if (!button) return;
+  const product = productCatalog.find((item) => item.id === button.dataset.relatedProduct);
+  if (product) {
+    window.history.replaceState({ productDetail: product.id }, "", window.location.href);
+    renderProductDetail(product);
+    productDetailScroll.scrollTo({ top: 0, behavior: "smooth" });
+  }
+});
+
+function renderSkuSheet() {
+  const unavailable = currentProduct.state === "到货提醒";
+  skuSheet.classList.toggle("is-reminder", unavailable);
+  skuProductImage.src = currentProduct.image;
+  skuProductImage.alt = currentProduct.name;
+  skuProductState.textContent = unavailable ? "可订阅提醒 · 当前无库存" : `${currentProduct.state} · 剩余 ${currentSku.stock} ${currentProduct.unit === "件" ? "件" : "组"}`;
+  skuSheetTitle.textContent = currentProduct.name;
+  skuProductMeta.textContent = unavailable ? "补货后将发送站内提醒" : `${currentSku.label} · ${currentSku.detail}`;
+  skuProductPrice.textContent = `¥${formatMoney(currentSku.price)}`;
+  skuOptionList.innerHTML = currentProduct.options.map((option) => `<label class="${option.id === currentSku.id ? "is-selected" : ""}"><input type="radio" name="skuOption" value="${option.id}" ${option.id === currentSku.id ? "checked" : ""}><span><b>${option.label}</b><small>${option.detail}</small></span></label>`).join("");
+  skuQuantityText.textContent = String(skuQuantity);
+  skuLimitText.textContent = unavailable ? "补货时间待定" : `每人限购 ${currentProduct.maxQty} ${currentProduct.unit === "件" ? "件" : "组"}`;
+  skuDeliveryText.textContent = deliveryCopy(currentProduct);
+  skuTotal.textContent = unavailable ? "—" : `¥${formatMoney(currentSku.price * skuQuantity)}`;
+  skuConfirmButton.textContent = unavailable ? "订阅到货提醒" : skuMode === "buy" ? "确认购买" : skuMode === "select" ? "确认选择" : "确认加入购物车";
+  skuConfirmButton.disabled = false;
+  document.querySelector("[data-sku-qty='minus']").disabled = skuQuantity <= 1;
+  document.querySelector("[data-sku-qty='plus']").disabled = skuQuantity >= currentProduct.maxQty;
+}
+
+function openSkuSheet(mode, trigger) {
+  if (!currentProduct) return;
+  skuMode = mode;
+  currentSku = currentSku || currentProduct.options[0];
+  skuQuantity = Math.min(Math.max(1, skuQuantity), currentProduct.maxQty);
+  renderSkuSheet();
+  openDialog(skuSheet, trigger);
+}
+
+document.querySelectorAll("[data-open-sku]").forEach((button) => button.addEventListener("click", () => {
+  if (currentProduct?.state === "到货提醒" && button === detailBuyButton) {
+    activeHomeIp = currentProduct.ip;
+    productReturnSearch = "";
+    closeProductDetail({ restoreFocus: false, updateHistory: false });
+    if (currentPage !== "home") navigate("home");
+    window.setTimeout(() => {
+      document.querySelector(`.ip-filter[data-ip='${activeHomeIp}']`)?.click();
+    }, 80);
+    return;
+  }
+  openSkuSheet(button.dataset.openSku, button);
+}));
+
+skuOptionList.addEventListener("change", (event) => {
+  currentSku = currentProduct.options.find((option) => option.id === event.target.value) || currentProduct.options[0];
+  skuQuantity = 1;
+  renderSkuSheet();
+});
+document.querySelectorAll("[data-sku-qty]").forEach((button) => button.addEventListener("click", () => {
+  skuQuantity = Math.min(currentProduct.maxQty, Math.max(1, skuQuantity + (button.dataset.skuQty === "plus" ? 1 : -1)));
+  renderSkuSheet();
+}));
+document.querySelectorAll("[data-toggle-detail-address]").forEach((button) => button.addEventListener("click", () => openAccountView("address", "", button)));
+
 productCards.forEach((card) => {
-  card.addEventListener("click", () => openProduct(card));
+  card.addEventListener("click", () => openProductDetail(productFromCard(card), card));
   card.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      openProduct(card);
+      openProductDetail(productFromCard(card), card);
     }
   });
 });
@@ -466,66 +730,113 @@ function applyCartFilter() {
 
 function updateCart() {
   const items = cartItems();
-  const selected = items.filter((item) => item.classList.contains("is-selected"));
+  applyCartFilter();
+  const scopedItems = activeCartFilter === "全部" ? items : items.filter((item) => !item.hidden);
+  const selected = scopedItems.filter((item) => item.classList.contains("is-selected"));
   const selectedQuantity = selected.reduce((sum, item) => sum + Number(item.dataset.quantity), 0);
   const total = selected.reduce((sum, item) => sum + Number(item.dataset.price) * Number(item.dataset.quantity), 0);
-  cartTotal.textContent = `¥${Number(total.toFixed(2))}`;
+  cartTotal.textContent = `¥${formatMoney(total)}`;
   checkoutButton.textContent = cartManaging
     ? `删除所选（${selected.length}种）`
     : `去结算（${selected.length}种 / ${selectedQuantity}件）`;
   checkoutButton.disabled = selected.length === 0;
   checkoutButton.classList.toggle("is-danger", cartManaging);
-  const allSelected = items.length > 0 && selected.length === items.length;
+  const allSelected = scopedItems.length > 0 && selected.length === scopedItems.length;
   selectAllButton.classList.toggle("is-selected", allSelected);
   selectAllButton.setAttribute("aria-pressed", String(allSelected));
   selectAllButton.querySelector("i").textContent = allSelected ? "✓" : "";
-  applyCartFilter();
+  items.forEach((item) => {
+    const quantity = Number(item.dataset.quantity);
+    const max = Number(item.dataset.maxQuantity || 9);
+    item.querySelector("[data-qty-action='minus']").disabled = quantity <= 1;
+    item.querySelector("[data-qty-action='plus']").disabled = quantity >= max;
+  });
   updateCartBadge();
 }
 
-function addProductToCart(product) {
-  const existing = cartItems().find((item) => item.dataset.cartId === product.id);
+function addProductToCart(product, sku = product.options[0], quantity = 1) {
+  const cartId = `${product.id}:${sku.id}`;
+  const existing = cartItems().find((item) => item.dataset.cartId === cartId);
   if (existing) {
-    existing.dataset.quantity = String(Number(existing.dataset.quantity) + 1);
+    existing.dataset.quantity = String(Math.min(Number(existing.dataset.maxQuantity || 9), Number(existing.dataset.quantity) + quantity));
     existing.querySelector(".qty-control b").textContent = existing.dataset.quantity;
     existing.classList.add("is-selected");
   } else {
     const item = document.createElement("article");
     item.className = "cart-item is-selected";
-    item.dataset.cartId = product.id;
+    item.dataset.cartId = cartId;
     item.dataset.state = product.state === "预售" ? "预售" : "现货";
-    item.dataset.price = String(product.price);
-    item.dataset.quantity = "1";
+    item.dataset.price = String(sku.price);
+    item.dataset.quantity = String(quantity);
+    item.dataset.maxQuantity = String(product.maxQty);
+    item.dataset.spec = sku.label;
     const stateClass = item.dataset.state === "预售" ? "presale-state" : "stock-state";
-    item.innerHTML = `<button class="cart-check" type="button" aria-pressed="true" aria-label="选择${product.name}"></button><img src="${product.image}" alt="${product.name}"><div class="cart-item-info"><span class="cart-state ${stateClass}">${item.dataset.state}</span><h2>${product.name}</h2><p>${product.shipping}</p><strong>¥${product.price}</strong><div class="qty-control"><button type="button" data-qty-action="minus" aria-label="减少${product.name}数量">−</button><b>1</b><button type="button" data-qty-action="plus" aria-label="增加${product.name}数量">＋</button></div></div>`;
+    item.innerHTML = `<button class="cart-check" type="button" aria-pressed="true" aria-label="选择${product.name}"></button><img src="${product.image}" alt="${product.name}"><div class="cart-item-info"><span class="cart-state ${stateClass}">${item.dataset.state}</span><h2>${product.name}</h2><p>${sku.label} · ${deliveryCopy(product)}</p><strong>¥${formatMoney(sku.price)}</strong><div class="qty-control"><button type="button" data-qty-action="minus" aria-label="减少${product.name}数量">−</button><b>${quantity}</b><button type="button" data-qty-action="plus" aria-label="增加${product.name}数量">＋</button></div></div>`;
     cartList.prepend(item);
   }
   updateCart();
 }
 
-sheetCartButton.addEventListener("click", () => {
-  if (!currentProduct) return;
-  if (currentProduct.state === "到货提醒") {
-    closeDialog();
-    showToast("已订阅到货提醒");
-    return;
-  }
-  addProductToCart(currentProduct);
-  closeDialog();
-  showToast(`${currentProduct.name} 已加入购物车`);
-});
+function checkoutItemFromCart(item) {
+  return {
+    cartId: item.dataset.cartId,
+    name: item.querySelector("h2")?.textContent || "商品",
+    image: item.querySelector(":scope > img")?.src || "",
+    state: item.dataset.state,
+    spec: item.dataset.spec || item.querySelector("p")?.textContent?.split(" · ")[0] || "标准款",
+    shipping: item.querySelector("p")?.textContent || "以结算页为准",
+    price: Number(item.dataset.price),
+    quantity: Number(item.dataset.quantity),
+  };
+}
 
-function prepareCheckout(total, mode, label, trigger = document.activeElement) {
-  checkoutContext = { mode, total, label };
-  checkoutTitle.textContent = mode === "cart" ? "确认购物车结算" : `确认购买 · ${label}`;
-  checkoutSubtotal.textContent = `¥${Number(total.toFixed(2))}`;
-  checkoutTotal.textContent = `¥${Number(total.toFixed(2))}`;
+function updateCheckoutTotals() {
+  const subtotal = checkoutContext.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const discount = Math.min(Number(checkoutCoupon.value || 0), subtotal);
+  const total = subtotal - discount;
+  checkoutContext.subtotal = subtotal;
+  checkoutContext.discount = discount;
+  checkoutContext.total = total;
+  checkoutSubtotal.textContent = `¥${formatMoney(subtotal)}`;
+  checkoutDiscount.textContent = `−¥${formatMoney(discount)}`;
+  checkoutTotal.textContent = `¥${formatMoney(total)}`;
+}
+
+function prepareCheckout(items, mode, trigger = document.activeElement) {
+  checkoutContext = { mode, items, subtotal: 0, discount: 0, total: 0 };
+  const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
+  checkoutTitle.textContent = mode === "cart" ? "确认购物车结算" : "确认立即购买";
+  checkoutCount.textContent = `共 ${items.length} 种 · ${quantity} 件`;
+  checkoutProductList.innerHTML = items.map((item) => `<article><img src="${item.image}" alt=""><div><span>${item.state}</span><strong>${item.name}</strong><small>${item.spec} · ${item.shipping}</small></div><p><b>¥${formatMoney(item.price)}</b><em>× ${item.quantity}</em></p></article>`).join("");
+  checkoutCoupon.value = "0";
+  checkoutAgreement.checked = true;
+  document.querySelector("[data-confirm-pay]").disabled = false;
+  checkoutAddressOptions.hidden = true;
+  document.querySelector("[data-checkout-address-toggle]").setAttribute("aria-expanded", "false");
+  updateCheckoutTotals();
   openDialog(checkoutSheet, trigger);
 }
 
-sheetBuyButton.addEventListener("click", (event) => {
-  if (!currentProduct || currentProduct.state === "到货提醒") return;
-  prepareCheckout(currentProduct.price, "buy-now", currentProduct.name, event.currentTarget);
+skuConfirmButton.addEventListener("click", (event) => {
+  if (!currentProduct) return;
+  if (currentProduct.state === "到货提醒") {
+    closeDialog();
+    detailCartButton.textContent = "已订阅提醒";
+    showToast("已订阅到货提醒，可在我的订阅中管理");
+    return;
+  }
+  detailSelection.textContent = `${currentSku.label} · ${skuQuantity} ${currentProduct.unit === "件" ? "件" : "组"}`;
+  if (skuMode === "select") {
+    closeDialog();
+    showToast("规格与数量已更新");
+  } else if (skuMode === "cart") {
+    addProductToCart(currentProduct, currentSku, skuQuantity);
+    closeDialog();
+    showToast(`${currentProduct.name} 已加入购物车`);
+  } else {
+    const item = { name: currentProduct.name, image: currentProduct.image, state: currentProduct.state, spec: currentSku.label, shipping: deliveryCopy(currentProduct), price: currentSku.price, quantity: skuQuantity };
+    prepareCheckout([item], "buy-now", event.currentTarget);
+  }
 });
 
 cartList.addEventListener("click", (event) => {
@@ -541,7 +852,8 @@ cartList.addEventListener("click", (event) => {
   }
   const quantityButton = event.target.closest("[data-qty-action]");
   if (quantityButton) {
-    const next = Math.max(1, Number(item.dataset.quantity) + (quantityButton.dataset.qtyAction === "plus" ? 1 : -1));
+    const max = Number(item.dataset.maxQuantity || 9);
+    const next = Math.min(max, Math.max(1, Number(item.dataset.quantity) + (quantityButton.dataset.qtyAction === "plus" ? 1 : -1)));
     item.dataset.quantity = String(next);
     quantityButton.parentElement.querySelector("b").textContent = String(next);
     updateCart();
@@ -555,7 +867,7 @@ document.querySelectorAll("[data-cart-filter]").forEach((button) => button.addEv
     item.classList.toggle("is-active", selected);
     item.setAttribute("aria-pressed", String(selected));
   });
-  applyCartFilter();
+  updateCart();
   showToast(`已显示${button.dataset.cartFilter}商品`);
 }));
 
@@ -570,7 +882,7 @@ selectAllButton.addEventListener("click", () => {
 });
 
 checkoutButton.addEventListener("click", (event) => {
-  const selected = cartItems().filter((item) => item.classList.contains("is-selected"));
+  const selected = cartItems().filter((item) => !item.hidden && item.classList.contains("is-selected"));
   if (!selected.length) return showToast("请先选择商品");
   if (cartManaging) {
     const removed = selected.length;
@@ -579,14 +891,56 @@ checkoutButton.addEventListener("click", (event) => {
     showToast(`已删除 ${removed} 种商品`);
     return;
   }
-  const total = selected.reduce((sum, item) => sum + Number(item.dataset.price) * Number(item.dataset.quantity), 0);
-  const quantity = selected.reduce((sum, item) => sum + Number(item.dataset.quantity), 0);
-  prepareCheckout(total, "cart", `${selected.length} 种 / ${quantity} 件商品`, event.currentTarget);
+  prepareCheckout(selected.map(checkoutItemFromCart), "cart", event.currentTarget);
 });
 
-document.querySelector("[data-confirm-pay]").addEventListener("click", () => {
-  closeDialog();
-  showToast(`模拟订单已提交 · ¥${Number(checkoutContext.total.toFixed(2))}`);
+checkoutCoupon.addEventListener("change", updateCheckoutTotals);
+checkoutAgreement.addEventListener("change", () => {
+  document.querySelector("[data-confirm-pay]").disabled = !checkoutAgreement.checked;
+});
+document.querySelector("[data-checkout-address-toggle]").addEventListener("click", (event) => {
+  checkoutAddressOptions.hidden = !checkoutAddressOptions.hidden;
+  event.currentTarget.setAttribute("aria-expanded", String(!checkoutAddressOptions.hidden));
+});
+checkoutAddressOptions.addEventListener("change", (event) => {
+  const usePudong = event.target.value === "浦东";
+  document.querySelector("#checkoutAddressText").textContent = usePudong ? "上海市浦东新区张江路 66 号" : "上海市徐汇区漕溪北路 88 号 · 默认地址";
+  checkoutAddressOptions.hidden = true;
+  document.querySelector("[data-checkout-address-toggle]").setAttribute("aria-expanded", "false");
+});
+
+document.querySelector("[data-confirm-pay]").addEventListener("click", (event) => {
+  if (!checkoutAgreement.checked) return;
+  const button = event.currentTarget;
+  button.disabled = true;
+  button.textContent = "正在生成模拟订单…";
+  window.setTimeout(() => {
+    const orderNumber = `GDD${Date.now().toString().slice(-10)}`;
+    if (checkoutContext.mode === "cart") {
+      const purchasedIds = new Set(checkoutContext.items.map((item) => item.cartId).filter(Boolean));
+      cartItems().filter((item) => purchasedIds.has(item.dataset.cartId)).forEach((item) => item.remove());
+      updateCart();
+    }
+    const orderName = checkoutContext.items.length > 1 ? `${checkoutContext.items[0].name}等 ${checkoutContext.items.length} 种商品` : checkoutContext.items[0].name;
+    accountContent.orders.unshift([orderName, "待发货", `¥${formatMoney(checkoutContext.total)} · ${orderNumber}`]);
+    const pendingShipCount = document.querySelector("[data-account-filter='待发货'] strong");
+    if (pendingShipCount) pendingShipCount.textContent = String(Number(pendingShipCount.textContent || 0) + 1);
+    document.querySelector("#orderSuccessMeta").textContent = `订单号 ${orderNumber} · 应付 ¥${formatMoney(checkoutContext.total)}`;
+    button.textContent = "提交模拟订单";
+    openDialog(orderSuccessSheet, button);
+  }, 520);
+});
+
+document.querySelector("[data-order-back-home]").addEventListener("click", () => {
+  closeDialog({ restoreFocus: false });
+  if (productDetailOpen) closeProductDetail({ restoreFocus: false, updateHistory: false });
+  navigate("home");
+});
+document.querySelector("[data-order-view]").addEventListener("click", (event) => {
+  closeDialog({ restoreFocus: false });
+  if (productDetailOpen) closeProductDetail({ restoreFocus: false, updateHistory: false });
+  navigate("mine");
+  window.setTimeout(() => openAccountView("orders", "", event.currentTarget), 100);
 });
 
 cartManageButton.addEventListener("click", () => {
@@ -705,6 +1059,16 @@ const revealObserver = new IntersectionObserver(
 document.querySelectorAll(".reveal").forEach((section) => revealObserver.observe(section));
 
 window.addEventListener("hashchange", () => routeFromHash());
+window.addEventListener("popstate", (event) => {
+  if (productDetailOpen) {
+    closeProductDetail({ updateHistory: false });
+    return;
+  }
+  if (event.state?.productDetail) {
+    const product = productCatalog.find((item) => item.id === event.state.productDetail);
+    if (product) openProductDetail(product, product.card, { pushHistory: false });
+  }
+});
 window.addEventListener("load", () => {
   routeFromHash({ instant: true });
   applyHomeFilters({ announce: false });

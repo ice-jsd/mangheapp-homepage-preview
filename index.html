@@ -522,20 +522,77 @@
           </div>
         </section>
 
+        <section class="product-detail-view" id="productDetailView" aria-labelledby="productDetailTitle" hidden>
+          <header class="product-detail-header">
+            <button type="button" data-close-product-detail aria-label="返回上一页"><img src="./assets/icon-back.svg" alt="" /></button>
+            <strong>商品详情</strong>
+            <div><button type="button" data-detail-share aria-label="分享商品"><img src="./assets/icon-share.svg" alt="" /></button><button type="button" data-detail-favorite aria-pressed="false" aria-label="收藏商品">♡</button></div>
+          </header>
+          <div class="product-detail-scroll" id="productDetailScroll">
+            <section class="detail-gallery" aria-label="商品图片">
+              <span id="detailGalleryBadge">官方授权</span>
+              <img id="detailProductImage" src="./assets/product-01.png" alt="商品主图" />
+              <div><button class="is-active" type="button" data-detail-gallery="front" aria-label="查看商品正面图"><img id="detailThumbOne" src="./assets/product-01.png" alt="" /></button><button type="button" data-detail-gallery="package" aria-label="查看商品包装图"><img id="detailThumbTwo" src="./assets/product-01.png" alt="" /></button></div>
+            </section>
+            <section class="detail-summary">
+              <div class="detail-brand-line"><span id="detailStateBadge">现货</span><b id="detailBrand">鬼灭之刃 · 正版授权</b></div>
+              <h1 id="productDetailTitle">炎柱燃魂纪念卡包</h1>
+              <div class="detail-price-line"><strong id="detailProductPrice">¥29.9</strong><span id="detailProductUnit">/抽</span><small id="detailSales">已售 286 · 剩余 86</small></div>
+              <p id="detailDescription">官方正版授权收藏周边，角色主题包装，适合收藏与送礼。</p>
+            </section>
+            <section class="detail-decision-card" aria-label="购买信息">
+              <button type="button" data-open-sku="select"><span><b>已选</b><strong id="detailSelection">标准款 · 1 件</strong></span><em>选择规格 ›</em></button>
+              <button type="button" data-toggle-detail-address><span><b>配送</b><strong id="detailDelivery">上海市徐汇区 · 48 小时内发货</strong></span><em>查看 ›</em></button>
+              <div><span><b>服务</b><strong>正版保障 · 破损补寄 · 售后服务</strong></span><em>安心购</em></div>
+            </section>
+            <section class="detail-notice" id="detailNotice"><b>现货说明</b><p>付款后预计 48 小时内发货，偏远地区时效可能顺延。</p></section>
+            <section class="detail-content">
+              <nav aria-label="商品详情栏目"><button class="is-active" type="button" data-detail-anchor="detailIntro">商品详情</button><button type="button" data-detail-anchor="detailSpecs">规格参数</button><button type="button" data-detail-anchor="detailPolicy">购买须知</button></nav>
+              <div class="detail-story" id="detailIntro"><span>GUODUODUO · OFFICIAL GOODS</span><h2 id="detailStoryTitle">把热爱，装进每一次收藏</h2><p id="detailStoryCopy">精选角色主题视觉与高品质材质，采用独立保护包装，减少运输过程中的磨损。</p><img id="detailStoryImage" src="./assets/product-01.png" alt="商品细节展示" /></div>
+              <dl class="detail-spec-list" id="detailSpecs"><div><dt>IP 系列</dt><dd id="detailSpecIp">鬼灭之刃</dd></div><div><dt>商品材质</dt><dd id="detailSpecMaterial">纸质收藏卡、覆膜包装</dd></div><div><dt>商品尺寸</dt><dd id="detailSpecSize">约 88 × 63 mm</dd></div><div><dt>包装方式</dt><dd id="detailSpecPackage">独立密封包装</dd></div></dl>
+              <div class="detail-policy" id="detailPolicy"><h2>购买须知</h2><p id="detailPolicyCopy">商品为正版授权周边。非质量问题不支持拆封后退换；运输破损请在签收后 48 小时内联系客服并提供开箱凭证。</p></div>
+            </section>
+            <section class="detail-related"><div><h2>同系列推荐</h2><span>继续探索 ›</span></div><div id="detailRelatedList"></div></section>
+          </div>
+          <footer class="detail-purchase-bar"><button class="detail-service" type="button" data-toast="客服工作时间 09:00–21:00"><span>◇</span>客服</button><button class="detail-cart" type="button" data-open-sku="cart">加入购物车</button><button class="detail-buy" type="button" data-open-sku="buy">立即购买</button></footer>
+        </section>
+
         <div class="sheet-backdrop" id="sheetBackdrop" aria-hidden="true"></div>
-        <section class="bottom-sheet product-sheet" id="productSheet" role="dialog" aria-modal="true" aria-labelledby="sheetProductTitle" hidden>
-          <button class="sheet-close" type="button" data-close-sheet aria-label="关闭详情">×</button>
-          <div class="sheet-product"><img id="sheetProductImage" src="./assets/product-01.png" alt="商品" /><div><span id="sheetProductState">官方授权 · 正品保障</span><h2 id="sheetProductTitle">炎柱燃魂纪念卡包</h2><p id="sheetProductMeta">现货 · 48h 内发货</p><strong id="sheetProductPrice">¥29.9</strong></div></div>
-          <div class="sheet-benefits"><span>✓ 正品保障</span><span>✓ 破损包赔</span><span>✓ 售后无忧</span></div>
-          <div class="sheet-actions"><button type="button" data-sheet-cart>加入购物车</button><button type="button" data-sheet-buy>立即购买</button></div>
+        <section class="bottom-sheet sku-sheet" id="skuSheet" role="dialog" aria-modal="true" aria-labelledby="skuSheetTitle" hidden>
+          <button class="sheet-close" type="button" data-close-sheet aria-label="关闭规格选择">×</button>
+          <div class="sheet-product"><img id="skuProductImage" src="./assets/product-01.png" alt="商品" /><div><span id="skuProductState">现货 · 剩余 86 件</span><h2 id="skuSheetTitle">炎柱燃魂纪念卡包</h2><p id="skuProductMeta">请选择规格与数量</p><strong id="skuProductPrice">¥29.9</strong></div></div>
+          <div class="sku-scroll-area">
+            <fieldset class="sku-options"><legend>选择规格</legend><div id="skuOptionList"></div></fieldset>
+            <div class="sku-quantity"><div><strong>购买数量</strong><span id="skuLimitText">每人限购 6 件</span></div><div><button type="button" data-sku-qty="minus" aria-label="减少购买数量">−</button><b id="skuQuantity">1</b><button type="button" data-sku-qty="plus" aria-label="增加购买数量">＋</button></div></div>
+            <button class="sku-address" type="button" data-toggle-detail-address><span><b>配送至</b><strong id="skuAddressText">上海市徐汇区 · 默认地址</strong><small id="skuDeliveryText">预计 48 小时内发货</small></span><em>›</em></button>
+            <div class="sku-services"><span>✓ 正版保障</span><span>✓ 破损补寄</span><span>✓ 售后服务</span></div>
+            <div class="sku-rule" id="skuRule">非质量问题不支持拆封后退换，具体以商品购买须知为准。</div>
+          </div>
+          <div class="sku-confirm-row"><div><span>合计</span><strong id="skuTotal">¥29.9</strong></div><button type="button" data-confirm-sku>确认加入购物车</button></div>
         </section>
 
         <section class="bottom-sheet checkout-sheet" id="checkoutSheet" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle" hidden>
           <button class="sheet-close" type="button" data-close-sheet aria-label="关闭结算">×</button>
-          <span class="sheet-kicker">ORDER CONFIRM</span><h2 id="checkoutTitle">确认本次结算</h2>
-          <div class="checkout-address"><b>收</b><div><strong>谷多多用户 138****8266</strong><p>上海市徐汇区 · 默认收货地址</p></div><span>›</span></div>
-          <div class="checkout-row"><span>商品金额</span><b id="checkoutSubtotal">¥198</b></div><div class="checkout-row"><span>运费</span><b>¥0</b></div><div class="checkout-row checkout-total"><span>应付合计</span><b id="checkoutTotal">¥198</b></div>
+          <span class="sheet-kicker">ORDER CONFIRM</span><h2 id="checkoutTitle">确认结算</h2>
+          <div class="checkout-scroll-area">
+            <button class="checkout-address" type="button" data-checkout-address-toggle aria-expanded="false"><b>收</b><div><strong id="checkoutAddressName">谷多多用户 138****8266</strong><p id="checkoutAddressText">上海市徐汇区漕溪北路 88 号 · 默认地址</p></div><span>›</span></button>
+            <div class="checkout-address-options" id="checkoutAddressOptions" hidden><label><input type="radio" name="checkoutAddress" value="徐汇" checked /><span><b>默认</b> 上海市徐汇区漕溪北路 88 号</span></label><label><input type="radio" name="checkoutAddress" value="浦东" /><span>上海市浦东新区张江路 66 号</span></label></div>
+            <section class="checkout-products"><div><h3>商品清单</h3><span id="checkoutCount">共 2 种 · 2 件</span></div><div id="checkoutProductList"></div></section>
+            <section class="checkout-options">
+              <div><span>配送方式</span><label><input type="radio" name="shippingMethod" value="standard" checked /> 普通配送 · ¥0</label></div>
+              <div><label for="checkoutCoupon">优惠券</label><select id="checkoutCoupon"><option value="0">不使用优惠券</option><option value="10">新人券 · 减 ¥10</option><option value="15">满 99 减 ¥15</option></select></div>
+              <div><label for="checkoutNote">订单备注</label><input id="checkoutNote" type="text" maxlength="40" placeholder="选填，最多 40 字" /></div>
+              <div><span>支付方式</span><b>模拟支付</b></div>
+            </section>
+            <section class="checkout-summary"><div class="checkout-row"><span>商品金额</span><b id="checkoutSubtotal">¥198</b></div><div class="checkout-row"><span>优惠</span><b id="checkoutDiscount">−¥0</b></div><div class="checkout-row"><span>运费</span><b>¥0</b></div><div class="checkout-row checkout-total"><span>应付合计</span><b id="checkoutTotal">¥198</b></div></section>
+            <label class="checkout-agreement"><input id="checkoutAgreement" type="checkbox" checked /><span>我已阅读并同意《购买须知》《预售规则》和《售后说明》</span></label>
+            <p class="checkout-demo-note">当前为静态交互原型，提交仅生成模拟订单，不会产生真实扣款。</p>
+          </div>
           <button class="confirm-pay" type="button" data-confirm-pay>提交模拟订单</button>
+        </section>
+
+        <section class="bottom-sheet order-success-sheet" id="orderSuccessSheet" role="dialog" aria-modal="true" aria-labelledby="orderSuccessTitle" hidden>
+          <div class="order-success-mark" aria-hidden="true">✓</div><span class="sheet-kicker">ORDER CREATED</span><h2 id="orderSuccessTitle">模拟订单提交成功</h2><p id="orderSuccessMeta">订单号 GDD20260828001 · 应付 ¥0</p><div class="order-success-note">订单已经写入“我的订单”，购物车中的对应商品也已同步更新。</div><div class="order-success-actions"><button type="button" data-order-back-home>返回首页</button><button type="button" data-order-view>查看订单</button></div>
         </section>
 
         <section class="bottom-sheet pool-sheet" id="poolSheet" role="dialog" aria-modal="true" aria-labelledby="poolSheetTitle" hidden>
