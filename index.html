@@ -7,9 +7,9 @@
     <link rel="icon" href="./assets/brand-logo.png" />
     <meta
       name="description"
-      content="谷多多完整静态 App 预览，包含首页、赏池、抽卡、购物车、个人中心与关键交互流程。"
+      content="谷多多 IP 收藏与抽赏，汇集正版角色周边、限定赏池与现货好物。"
     />
-    <title>谷多多 · 完整静态 App Preview</title>
+    <title>谷多多 · IP 收藏与抽赏</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,10 +20,10 @@
   </head>
   <body>
     <div class="preview-stage">
-      <aside class="preview-note" aria-label="预览说明">
-        <span class="eyebrow">FIGMA → INTERACTIVE APP</span>
-        <h1>谷多多<br />完整静态 App</h1>
-        <p>五个主页面与搜索、商品详情、抽卡结果、结算确认已串成可点击体验。</p>
+      <aside class="preview-note" aria-label="品牌介绍">
+        <span class="eyebrow">GUODUODUO · OFFICIAL GOODS</span>
+        <h1>谷多多<br />把热爱带回家</h1>
+        <p>正版 IP 收藏、限定赏池与现货周边，都在一个更好逛的收藏空间里。</p>
         <div class="preview-tags">
           <span>390 × 844</span>
           <span>Responsive</span>
@@ -433,7 +433,7 @@
               </article>
 
               <section class="draw-console" aria-labelledby="drawCountTitle">
-                <div class="console-title"><h2 id="drawCountTitle">选择模拟抽取数量</h2><p>下一步确认金额与模拟支付</p></div>
+                <div class="console-title"><h2 id="drawCountTitle">选择抽取数量</h2><p>支付成功后立即开包</p></div>
                 <div class="draw-options">
                   <button type="button" data-draw-count="整盒抽" data-draw-price="116"><span>组合优惠</span><strong>整盒抽</strong><b>¥116</b></button>
                   <button class="is-recommended" type="button" data-draw-count="抽 1 包" data-draw-price="20"><span>推荐</span><strong>抽 1 包</strong><b>¥20</b></button>
@@ -582,17 +582,17 @@
               <div><span>配送方式</span><label><input type="radio" name="shippingMethod" value="standard" checked /> 普通配送 · ¥0</label></div>
               <div><label for="checkoutCoupon">优惠券</label><select id="checkoutCoupon"><option value="0">不使用优惠券</option><option value="10">新人券 · 减 ¥10</option><option value="15">满 99 减 ¥15</option></select></div>
               <div><label for="checkoutNote">订单备注</label><input id="checkoutNote" type="text" maxlength="40" placeholder="选填，最多 40 字" /></div>
-              <div><span>支付方式</span><b>模拟支付</b></div>
+              <div class="payment-option-row"><span>支付方式</span><div class="payment-choice-group" data-payment-group="checkout"><label class="is-selected"><input type="radio" name="checkoutPayment" value="微信支付" checked /><b>微信支付</b></label><label><input type="radio" name="checkoutPayment" value="支付宝" /><b>支付宝</b></label></div></div>
             </section>
             <section class="checkout-summary"><div class="checkout-row"><span>商品金额</span><b id="checkoutSubtotal">¥198</b></div><div class="checkout-row"><span>优惠</span><b id="checkoutDiscount">−¥0</b></div><div class="checkout-row"><span>运费</span><b>¥0</b></div><div class="checkout-row checkout-total"><span>应付合计</span><b id="checkoutTotal">¥198</b></div></section>
             <label class="checkout-agreement"><input id="checkoutAgreement" type="checkbox" checked /><span>我已阅读并同意《购买须知》《预售规则》和《售后说明》</span></label>
-            <p class="checkout-demo-note">当前为静态交互原型，提交仅生成模拟订单，不会产生真实扣款。</p>
+            <p class="payment-notice">付款后订单将进入待发货；预售商品按页面公示时间发出。</p>
           </div>
-          <button class="confirm-pay" type="button" data-confirm-pay>提交模拟订单</button>
+          <button class="confirm-pay" type="button" data-confirm-pay>立即支付 ¥198</button>
         </section>
 
         <section class="bottom-sheet order-success-sheet" id="orderSuccessSheet" role="dialog" aria-modal="true" aria-labelledby="orderSuccessTitle" hidden>
-          <div class="order-success-mark" aria-hidden="true">✓</div><span class="sheet-kicker">ORDER CREATED</span><h2 id="orderSuccessTitle">模拟订单提交成功</h2><p id="orderSuccessMeta">订单号 GDD20260828001 · 应付 ¥0</p><div class="order-success-note">订单已经写入“我的订单”，购物车中的对应商品也已同步更新。</div><div class="order-success-actions"><button type="button" data-order-back-home>返回首页</button><button type="button" data-order-view>查看订单</button></div>
+          <div class="order-success-mark" aria-hidden="true">✓</div><span class="sheet-kicker">PAYMENT SUCCESS</span><h2 id="orderSuccessTitle">支付成功</h2><p id="orderSuccessMeta">订单号 GDD20260828001 · 实付 ¥0</p><div class="order-success-note">订单已进入待发货，发货后可在“我的订单”查看物流进度。</div><div class="order-success-actions"><button type="button" data-order-back-home>返回首页</button><button type="button" data-order-view>查看订单</button></div>
         </section>
 
         <section class="bottom-sheet pool-sheet" id="poolSheet" role="dialog" aria-modal="true" aria-labelledby="poolSheetTitle" hidden>
@@ -600,7 +600,13 @@
         </section>
 
         <section class="bottom-sheet draw-confirm-sheet" id="drawConfirmSheet" role="dialog" aria-modal="true" aria-labelledby="drawConfirmTitle" hidden>
-          <button class="sheet-close" type="button" data-close-sheet aria-label="关闭模拟抽取确认">×</button><span class="sheet-kicker">SIMULATED DRAW</span><h2 id="drawConfirmTitle">确认模拟抽取</h2><p id="drawConfirmMeta">抽 1 包 · 共 ¥20</p><div class="draw-confirm-note">这是静态原型的模拟支付，不会产生真实扣款。确认后展示对应数量的模拟开包结果。</div><button class="confirm-pay" type="button" data-confirm-draw>确认并模拟开包</button>
+          <button class="sheet-close" type="button" data-close-sheet aria-label="关闭支付确认">×</button>
+          <span class="sheet-kicker">PAYMENT CONFIRM</span><h2 id="drawConfirmTitle">确认抽取订单</h2>
+          <div class="draw-order-card"><img src="./assets/draw-pack.png" alt="炎柱纪念卡包" /><div><span>鬼灭之刃 · 正版授权</span><strong>炎柱纪念卡包</strong><small id="drawConfirmMeta">抽 1 包 · 每包随机 1 款</small></div><b id="drawConfirmPrice">¥20</b></div>
+          <section class="draw-payment-panel"><h3>选择支付方式</h3><div class="draw-payment-methods" data-payment-group="draw"><label class="is-selected"><input type="radio" name="drawPayment" value="微信支付" checked /><i>微</i><span><b>微信支付</b><small>推荐使用</small></span><em>✓</em></label><label><input type="radio" name="drawPayment" value="支付宝" /><i>支</i><span><b>支付宝</b><small>安全快捷</small></span><em>✓</em></label></div></section>
+          <div class="draw-confirm-summary"><p><span>商品金额</span><b id="drawConfirmSubtotal">¥20</b></p><p><span>组合优惠</span><b id="drawConfirmDiscount">−¥0</b></p><p><span>应付合计</span><strong id="drawConfirmTotal">¥20</strong></p></div>
+          <div class="draw-confirm-note">支付完成后立即开包，抽取结果将自动存入“我的赏品”。抽取结果一经生成，不支持无理由取消。</div>
+          <button class="confirm-pay" type="button" data-confirm-draw>微信支付 ¥20</button>
         </section>
 
         <section class="bottom-sheet account-sheet" id="accountSheet" role="dialog" aria-modal="true" aria-labelledby="accountSheetTitle" hidden>
@@ -608,7 +614,7 @@
         </section>
 
         <section class="result-modal" id="drawResult" role="dialog" aria-modal="true" aria-labelledby="drawResultTitle" hidden>
-          <div class="result-spark" aria-hidden="true">✦</div><span>SIMULATED RESULT</span><h2 id="drawResultTitle">模拟抽中了限定款！</h2><img src="./assets/product-01.png" alt="炎柱限定公仔" /><strong>炼狱杏寿郎 · 燃魂款</strong><p id="drawResultMeta">1 件赏品已存入「我的赏品」</p><button type="button" data-close-result>收下好运</button>
+          <div class="result-spark" aria-hidden="true">✦</div><span>DRAW RESULT</span><h2 id="drawResultTitle">恭喜抽中限定款！</h2><img src="./assets/product-01.png" alt="炎柱限定公仔" /><strong>炼狱杏寿郎 · 燃魂款</strong><p id="drawResultMeta">1 件赏品已存入「我的赏品」</p><button type="button" data-close-result>收下好运</button>
         </section>
 
         <div class="toast" id="toast" role="status" aria-live="polite"></div>

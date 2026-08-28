@@ -493,6 +493,7 @@ const checkoutCount = document.querySelector("#checkoutCount");
 const checkoutCoupon = document.querySelector("#checkoutCoupon");
 const checkoutAgreement = document.querySelector("#checkoutAgreement");
 const checkoutAddressOptions = document.querySelector("#checkoutAddressOptions");
+const checkoutPayButton = document.querySelector("[data-confirm-pay]");
 const checkoutButton = document.querySelector("[data-open-checkout]");
 const cartManageButton = document.querySelector("[data-cart-manage]");
 const cartPage = document.querySelector("#page-cart");
@@ -511,6 +512,18 @@ let productReturnSearch = "";
 function formatMoney(value) {
   return Number(value.toFixed(2)).toString();
 }
+
+function selectedPayment(name) {
+  return document.querySelector(`input[name="${name}"]:checked`)?.value || "微信支付";
+}
+
+document.querySelectorAll("[data-payment-group]").forEach((group) => {
+  group.addEventListener("change", (event) => {
+    group.querySelectorAll("label").forEach((label) => label.classList.toggle("is-selected", label.contains(event.target)));
+    if (event.target.name === "checkoutPayment") updateCheckoutTotals();
+    if (event.target.name === "drawPayment") updateDrawPaymentButton();
+  });
+});
 
 function productStateClass(state) {
   if (state === "现货" || state === "上新") return "is-stock";
@@ -800,6 +813,7 @@ function updateCheckoutTotals() {
   checkoutSubtotal.textContent = `¥${formatMoney(subtotal)}`;
   checkoutDiscount.textContent = `−¥${formatMoney(discount)}`;
   checkoutTotal.textContent = `¥${formatMoney(total)}`;
+  if (!checkoutPayButton.disabled) checkoutPayButton.textContent = `${selectedPayment("checkoutPayment")} ¥${formatMoney(total)}`;
 }
 
 function prepareCheckout(items, mode, trigger = document.activeElement) {
@@ -810,7 +824,8 @@ function prepareCheckout(items, mode, trigger = document.activeElement) {
   checkoutProductList.innerHTML = items.map((item) => `<article><img src="${item.image}" alt=""><div><span>${item.state}</span><strong>${item.name}</strong><small>${item.spec} · ${item.shipping}</small></div><p><b>¥${formatMoney(item.price)}</b><em>× ${item.quantity}</em></p></article>`).join("");
   checkoutCoupon.value = "0";
   checkoutAgreement.checked = true;
-  document.querySelector("[data-confirm-pay]").disabled = false;
+  checkoutPayButton.disabled = false;
+  checkoutPayButton.classList.remove("is-paying");
   checkoutAddressOptions.hidden = true;
   document.querySelector("[data-checkout-address-toggle]").setAttribute("aria-expanded", "false");
   updateCheckoutTotals();
@@ -896,7 +911,7 @@ checkoutButton.addEventListener("click", (event) => {
 
 checkoutCoupon.addEventListener("change", updateCheckoutTotals);
 checkoutAgreement.addEventListener("change", () => {
-  document.querySelector("[data-confirm-pay]").disabled = !checkoutAgreement.checked;
+  checkoutPayButton.disabled = !checkoutAgreement.checked;
 });
 document.querySelector("[data-checkout-address-toggle]").addEventListener("click", (event) => {
   checkoutAddressOptions.hidden = !checkoutAddressOptions.hidden;
@@ -909,11 +924,13 @@ checkoutAddressOptions.addEventListener("change", (event) => {
   document.querySelector("[data-checkout-address-toggle]").setAttribute("aria-expanded", "false");
 });
 
-document.querySelector("[data-confirm-pay]").addEventListener("click", (event) => {
+checkoutPayButton.addEventListener("click", (event) => {
   if (!checkoutAgreement.checked) return;
   const button = event.currentTarget;
+  const paymentMethod = selectedPayment("checkoutPayment");
   button.disabled = true;
-  button.textContent = "正在生成模拟订单…";
+  button.classList.add("is-paying");
+  button.textContent = `${paymentMethod}支付中…`;
   window.setTimeout(() => {
     const orderNumber = `GDD${Date.now().toString().slice(-10)}`;
     if (checkoutContext.mode === "cart") {
@@ -925,10 +942,11 @@ document.querySelector("[data-confirm-pay]").addEventListener("click", (event) =
     accountContent.orders.unshift([orderName, "待发货", `¥${formatMoney(checkoutContext.total)} · ${orderNumber}`]);
     const pendingShipCount = document.querySelector("[data-account-filter='待发货'] strong");
     if (pendingShipCount) pendingShipCount.textContent = String(Number(pendingShipCount.textContent || 0) + 1);
-    document.querySelector("#orderSuccessMeta").textContent = `订单号 ${orderNumber} · 应付 ¥${formatMoney(checkoutContext.total)}`;
-    button.textContent = "提交模拟订单";
+    document.querySelector("#orderSuccessMeta").textContent = `订单号 ${orderNumber} · 实付 ¥${formatMoney(checkoutContext.total)}`;
+    button.classList.remove("is-paying");
+    button.textContent = `${paymentMethod} ¥${formatMoney(checkoutContext.total)}`;
     openDialog(orderSuccessSheet, button);
-  }, 520);
+  }, 760);
 });
 
 document.querySelector("[data-order-back-home]").addEventListener("click", () => {
@@ -968,7 +986,7 @@ function openPool(pool, trigger = pool) {
   currentPool = pool;
   poolSheetTitle.textContent = pool.dataset.pool;
   poolSheetMeta.textContent = `剩余 ${pool.dataset.remaining} 份 · ${pool.dataset.popularity} 人参与 · ${pool.dataset.poolType}`;
-  enterPoolButton.textContent = pool.dataset.poolDestination === "draw" ? "进入对应抽卡机" : "模拟参与本赏池";
+  enterPoolButton.textContent = pool.dataset.poolDestination === "draw" ? "进入对应抽卡机" : "选择抽取次数";
   openDialog(poolSheet, trigger);
 }
 
@@ -983,41 +1001,64 @@ document.querySelectorAll("[data-pool]").forEach((pool) => {
 });
 enterPoolButton.addEventListener("click", () => {
   const destination = currentPool?.dataset.poolDestination;
-  const poolName = currentPool?.dataset.pool || "赏池";
   closeDialog({ restoreFocus: false });
-  if (destination) navigate(destination);
-  else showToast(`已模拟参与「${poolName}」`);
+  navigate(destination || "draw");
 });
 
-/* Simulated draw */
+/* Draw payment and result */
 const drawConfirmMeta = document.querySelector("#drawConfirmMeta");
+const drawConfirmPrice = document.querySelector("#drawConfirmPrice");
+const drawConfirmSubtotal = document.querySelector("#drawConfirmSubtotal");
+const drawConfirmDiscount = document.querySelector("#drawConfirmDiscount");
+const drawConfirmTotal = document.querySelector("#drawConfirmTotal");
+const drawPayButton = document.querySelector("[data-confirm-draw]");
 const drawResultTitle = document.querySelector("#drawResultTitle");
 const drawResultMeta = document.querySelector("#drawResultMeta");
 let pendingDraw = null;
-let simulatedPrizeCount = 0;
+let newPrizeCount = 0;
+
+function updateDrawPaymentButton() {
+  if (!pendingDraw || drawPayButton.disabled) return;
+  drawPayButton.textContent = `${selectedPayment("drawPayment")} ¥${formatMoney(pendingDraw.price)}`;
+}
 
 document.querySelectorAll("[data-draw-count]").forEach((button) => button.addEventListener("click", () => {
   const label = button.dataset.drawCount;
   const count = label.includes("整盒") ? 6 : Number(label.match(/\d+/)?.[0] || 1);
-  pendingDraw = { label, count, price: Number(button.dataset.drawPrice), trigger: button };
-  drawConfirmMeta.textContent = `${label} · ${count} 件模拟赏品 · 共 ¥${pendingDraw.price}`;
+  const price = Number(button.dataset.drawPrice);
+  const subtotal = count * 20;
+  pendingDraw = { label, count, price, subtotal, discount: subtotal - price, trigger: button };
+  drawConfirmMeta.textContent = `${label} · 每包随机 1 款`;
+  drawConfirmPrice.textContent = `¥${formatMoney(price)}`;
+  drawConfirmSubtotal.textContent = `¥${formatMoney(subtotal)}`;
+  drawConfirmDiscount.textContent = `−¥${formatMoney(subtotal - price)}`;
+  drawConfirmTotal.textContent = `¥${formatMoney(price)}`;
+  drawPayButton.disabled = false;
+  drawPayButton.classList.remove("is-paying");
+  updateDrawPaymentButton();
   openDialog(drawConfirmSheet, button);
 }));
 
-document.querySelector("[data-confirm-draw]").addEventListener("click", () => {
+drawPayButton.addEventListener("click", (event) => {
   if (!pendingDraw) return;
   const draw = pendingDraw;
-  closeDialog({ restoreFocus: false });
-  showToast("模拟支付已确认，正在开包…");
+  const paymentMethod = selectedPayment("drawPayment");
+  const button = event.currentTarget;
+  button.disabled = true;
+  button.classList.add("is-paying");
+  button.textContent = `${paymentMethod}支付中…`;
   window.setTimeout(() => {
-    simulatedPrizeCount += draw.count;
-    drawResultTitle.textContent = draw.count > 1 ? `模拟开出 ${draw.count} 件赏品！` : "模拟抽中了限定款！";
-    drawResultMeta.textContent = `${draw.count} 件赏品已存入「我的赏品」 · 模拟金额 ¥${draw.price}`;
+    newPrizeCount += draw.count;
+    accountContent.records.unshift(["炎柱纪念卡包", draw.label, `刚刚 · 实付 ¥${formatMoney(draw.price)}`]);
+    drawResultTitle.textContent = draw.count > 1 ? `恭喜获得 ${draw.count} 件赏品！` : "恭喜抽中限定款！";
+    drawResultMeta.textContent = `${draw.count} 件赏品已存入「我的赏品」 · 实付 ¥${formatMoney(draw.price)}`;
+    button.classList.remove("is-paying");
+    button.textContent = `${paymentMethod} ¥${formatMoney(draw.price)}`;
     openDialog(drawResult, draw.trigger);
-  }, 520);
+  }, 760);
 });
 
-document.querySelector("[data-preview-card]").addEventListener("click", () => showToast("卡包内含 6 款，选择数量开始模拟抽取"));
+document.querySelector("[data-preview-card]").addEventListener("click", () => showToast("卡包内含 6 款，选择数量后即可抽取"));
 
 /* Account detail */
 const accountSheetTitle = document.querySelector("#accountSheetTitle");
@@ -1030,16 +1071,16 @@ const accountContent = {
   address: [["默认收货地址", "谷多多用户 138****8266", "上海市徐汇区"]],
   support: [["在线客服", "工作日 09:00–21:00", "当前可咨询"]],
   invite: [["邀请有礼", "每邀请 1 位好友得 20 积分", "分享码 GUJI2026"]],
-  privacy: [["隐私设置", "个性化推荐已开启", "可在正式 App 中管理"]],
-  about: [["谷多多 Preview", "完整静态交互原型", "Version 2.0"]],
+  privacy: [["隐私设置", "个性化推荐已开启", "可随时调整推荐偏好"]],
+  about: [["谷多多", "正版 IP 收藏与抽赏平台", "Version 2.1"]],
 };
 
 function openAccountView(view, filter = "", trigger = document.activeElement) {
   const titles = { orders: "我的订单", prizes: "我的赏品", records: "抽赏记录", coupons: "我的优惠券", "after-sale": "售后服务", address: "收货地址", support: "客服中心", invite: "邀请有礼", privacy: "隐私设置", about: "关于我们" };
   accountSheetTitle.textContent = filter || titles[view] || "个人中心";
   let rows;
-  if (view === "prizes") rows = [["炼狱杏寿郎 · 燃魂款", "已入赏品柜", `基础 1 件${simulatedPrizeCount ? ` + 本次模拟 ${simulatedPrizeCount} 件` : ""}`], ["蜜璃亚克力立牌", "待收货", "1 件"]];
-  else rows = accountContent[view] || [["功能说明", "此入口为静态原型", "暂无更多数据"]];
+  if (view === "prizes") rows = [["炼狱杏寿郎 · 燃魂款", "已入赏品柜", `基础 1 件${newPrizeCount ? ` + 本次 ${newPrizeCount} 件` : ""}`], ["蜜璃亚克力立牌", "待收货", "1 件"]];
+  else rows = accountContent[view] || [["暂无内容", "稍后再来看看", "暂无更多数据"]];
   if (view === "orders" && filter) rows = rows.filter((row) => row[1] === filter);
   accountSheetList.innerHTML = rows.map((row) => `<article><strong>${row[0]}</strong><span>${row[1]}</span><small>${row[2]}</small></article>`).join("");
   openDialog(accountSheet, trigger);
