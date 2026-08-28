@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#fffaf0" />
+    <link rel="icon" href="./assets/brand-logo.png" />
+    <meta
+      name="description"
+      content="Gujiapp 首页 V4I 可交互 HTML 预览，复刻 Figma 390×844 移动端设计。"
+    />
+    <title>Gujiapp 首页 V4I · HTML Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="preview-stage">
+      <aside class="preview-note" aria-label="预览说明">
+        <span class="eyebrow">FIGMA → HTML</span>
+        <h1>Gujiapp<br />首页 V4I</h1>
+        <p>玩法频道、IP 筛选和运营快捷入口已经拆成三套独立任务。</p>
+        <div class="preview-tags">
+          <span>390 × 844</span>
+          <span>Responsive</span>
+          <span>Interactive</span>
+        </div>
+      </aside>
+
+      <div class="phone-shell" id="app">
+        <div class="scroll-view" id="scrollView">
+          <header class="app-header" id="top">
+            <div class="brand-toolbar">
+              <button class="brand-button" type="button" aria-label="返回首页">
+                <img src="./assets/brand-logo.png" alt="谷多多" />
+              </button>
+
+              <button class="checkin-button" type="button" data-toast="签到成功，今日好运 +1">
+                <img src="./assets/icon-crystal.svg" alt="" />
+                <span>每日签到</span>
+              </button>
+
+              <div class="toolbar-actions" aria-label="快捷操作">
+                <button type="button" aria-label="我的订单" data-toast="正在打开我的订单">
+                  <img src="./assets/icon-order.svg" alt="" />
+                </button>
+                <button type="button" aria-label="个人中心" data-toast="正在打开个人中心">
+                  <img src="./assets/icon-profile.svg" alt="" />
+                </button>
+              </div>
+            </div>
+
+            <form class="search-bar" id="searchForm" role="search">
+              <img src="./assets/icon-search.svg" alt="" />
+              <input
+                id="searchInput"
+                type="search"
+                name="query"
+                autocomplete="off"
+                placeholder="搜 IP、角色、卡包"
+                aria-label="搜索 IP、角色或卡包"
+              />
+            </form>
+
+            <nav class="channel-tabs" aria-label="玩法频道">
+              <button class="channel-tab has-dot" type="button" data-target="products">每日上新</button>
+              <button class="channel-tab is-active" type="button" data-target="hero" aria-current="page">推荐</button>
+              <button class="channel-tab" type="button" data-target="quickActions">赏池</button>
+              <button class="channel-tab" type="button" data-target="hero">抽卡机</button>
+              <button class="channel-tab" type="button" data-target="products">单领</button>
+            </nav>
+          </header>
+
+          <main>
+            <section class="ip-section" aria-label="按 IP 筛选">
+              <div class="ip-rail">
+                <button class="ip-filter is-selected" type="button" aria-pressed="true" data-ip="全部IP">
+                  <span class="ip-avatar ip-all">ALL</span>
+                  <span>全部IP</span>
+                </button>
+                <button class="ip-filter" type="button" aria-pressed="false" data-ip="纸房子">
+                  <span class="ip-avatar"><img src="./assets/ip-paperhouse.png" alt="" /></span>
+                  <span>纸房子</span>
+                </button>
+                <button class="ip-filter" type="button" aria-pressed="false" data-ip="罗小黑战记">
+                  <span class="ip-avatar"><img src="./assets/ip-luoxiaohei.png" alt="" /></span>
+                  <span>罗小黑战记</span>
+                </button>
+                <button class="ip-filter" type="button" aria-pressed="false" data-ip="鬼灭之刃">
+                  <span class="ip-avatar"><img src="./assets/ip-kimetsu.png" alt="" /></span>
+                  <span>鬼灭之刃</span>
+                </button>
+                <button class="ip-filter" type="button" aria-pressed="false" data-ip="盗墓笔记">
+                  <span class="ip-avatar"><img src="./assets/ip-daomu.png" alt="" /></span>
+                  <span>盗墓笔记</span>
+                </button>
+                <button class="ip-filter" type="button" aria-pressed="false" data-ip="非人哉">
+                  <span class="ip-avatar"><img src="./assets/ip-feirenzai.png" alt="" /></span>
+                  <span>非人哉</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="hero-section reveal" id="hero" aria-label="炎柱限定活动">
+              <article class="hero-card">
+                <img class="hero-media" src="./assets/hero-rengoku.png" alt="炎柱燃魂限定特辑" />
+                <div class="hero-shade"></div>
+                <div class="hero-copy">
+                  <span class="hero-kicker">GULI EXCLUSIVE · 本周上新</span>
+                  <h2>炎柱燃魂限定特辑</h2>
+                  <p>纪念卡包 · 现货速发</p>
+                </div>
+                <button class="hero-cta" type="button" data-toast="已进入炎柱限定抽卡机">
+                  立即开抽 <span aria-hidden="true">→</span>
+                </button>
+                <div class="carousel-dots" aria-label="第 1 张，共 3 张">
+                  <span class="is-current"></span><span></span><span></span>
+                </div>
+              </article>
+            </section>
+
+            <section class="quick-section reveal" id="quickActions" aria-label="运营快捷入口">
+              <div class="quick-actions">
+                <button class="quick-card quick-card-side" type="button" data-target="ranking">
+                  <img src="./assets/quick-hot.png" alt="" />
+                  <strong>今日热门</strong>
+                  <span>386 人正在逛</span>
+                </button>
+                <button class="quick-card quick-card-primary" type="button" data-toast="已打开限量赏池">
+                  <img src="./assets/quick-pool.png" alt="" />
+                  <strong>限量赏池</strong>
+                  <span>仅余 42 抽</span>
+                </button>
+                <button class="quick-card quick-card-side" type="button" data-target="products">
+                  <img src="./assets/quick-stock.png" alt="" />
+                  <strong>现货速发</strong>
+                  <span>48h 内发</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="weekly-section reveal" aria-label="每周专题推荐">
+              <article class="weekly-card">
+                <img src="./assets/weekly-giyu.png" alt="义勇夜巡收藏" />
+                <div class="weekly-shade"></div>
+                <div class="weekly-copy">
+                  <span>WEEKLY DROP · 热门补货</span>
+                  <h2>义勇夜巡收藏</h2>
+                  <p>徽章 · 立牌 · 挂件</p>
+                </div>
+                <button type="button" data-toast="已进入义勇夜巡专题">进入专题 →</button>
+              </article>
+            </section>
+
+            <section class="ranking-section reveal" id="ranking" aria-labelledby="rankingTitle">
+              <div class="section-heading">
+                <h2 id="rankingTitle">今日人气角色榜</h2>
+                <button type="button" data-toast="已展开完整角色榜">
+                  查看全部 <img src="./assets/icon-chevron.svg" alt="" />
+                </button>
+              </div>
+              <div class="ranking-rail">
+                <button class="rank-card" type="button" data-toast="人气第 1：徐敏敏">
+                  <span class="rank-number rank-gold">1</span>
+                  <img src="./assets/rank-xuminmin.png" alt="徐敏敏" />
+                  <strong>徐敏敏</strong><span>2.8k 热度</span>
+                </button>
+                <button class="rank-card" type="button" data-toast="人气第 2：赵颖">
+                  <span class="rank-number rank-coral">2</span>
+                  <img src="./assets/rank-zhaoying.png" alt="赵颖" />
+                  <strong>赵颖</strong><span>2.3k 热度</span>
+                </button>
+                <button class="rank-card" type="button" data-toast="人气第 3：王艺茵">
+                  <span class="rank-number rank-teal">3</span>
+                  <img src="./assets/rank-wangyihan.png" alt="王艺茵" />
+                  <strong>王艺茵</strong><span>1.9k 热度</span>
+                </button>
+                <button class="rank-card" type="button" data-toast="人气第 4：贺亚红">
+                  <span class="rank-number">4</span>
+                  <img src="./assets/rank-luting.png" alt="贺亚红" />
+                  <strong>贺亚红</strong><span>1.6k 热度</span>
+                </button>
+                <button class="rank-card" type="button" data-toast="人气第 5：陆婷">
+                  <span class="rank-number">5</span>
+                  <img src="./assets/rank-jiiyi.png" alt="陆婷" />
+                  <strong>陆婷</strong><span>1.2k 热度</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="products-section reveal" id="products" aria-labelledby="productsTitle">
+              <div class="section-heading">
+                <h2 id="productsTitle">猜你会喜欢</h2>
+                <button type="button" data-toast="已切换更多推荐">
+                  换一批 <span aria-hidden="true">↻</span>
+                </button>
+              </div>
+              <div class="product-grid">
+                <article class="product-card" tabindex="0" data-product="炎柱燃魂纪念卡包">
+                  <div class="product-media square">
+                    <img src="./assets/product-01.png" alt="炎柱燃魂纪念卡包" />
+                    <span class="type-badge badge-draw">抽卡机</span>
+                  </div>
+                  <div class="product-body">
+                    <small>鬼灭之刃 · 炎柱系列</small>
+                    <h3>炎柱燃魂纪念卡包</h3>
+                    <span class="state-label state-stock">现货</span>
+                    <p class="price"><strong>29.9</strong><span>/抽</span></p>
+                    <p class="stock"><i></i>剩余 86 份</p>
+                  </div>
+                </article>
+
+                <article class="product-card" tabindex="0" data-product="炎柱鎏金亚克力砖">
+                  <div class="product-media tall">
+                    <img src="./assets/product-02.png" alt="炎柱鎏金亚克力砖" />
+                    <span class="type-badge badge-pool">赏池</span>
+                    <span class="media-state">限量</span>
+                  </div>
+                  <div class="product-body">
+                    <small>鬼灭之刃 · 限定系列</small>
+                    <h3>炎柱鎏金亚克力砖</h3>
+                    <span class="state-label state-hot">限量掉落</span>
+                    <p class="price"><strong>39</strong><span>/抽</span></p>
+                    <p class="stock"><i></i>仅余 42 抽</p>
+                  </div>
+                </article>
+
+                <article class="product-card" tabindex="0" data-product="祢豆子软萌徽章套组">
+                  <div class="product-media tall">
+                    <img src="./assets/product-03.png" alt="祢豆子软萌徽章套组" />
+                    <span class="type-badge badge-single">单领</span>
+                  </div>
+                  <div class="product-body">
+                    <small>鬼灭之刃 · 祢豆子系列</small>
+                    <h3>祢豆子软萌徽章套组</h3>
+                    <span class="state-label state-stock">48h 发货</span>
+                    <p class="price"><strong>49</strong><span>/件</span></p>
+                    <p class="stock"><i></i>现货充足</p>
+                  </div>
+                </article>
+
+                <article class="product-card" tabindex="0" data-product="罗小黑黑金立牌">
+                  <div class="product-media square">
+                    <img src="./assets/product-04.png" alt="罗小黑黑金立牌" />
+                    <span class="type-badge badge-single">单领</span>
+                    <span class="media-state presale">预售</span>
+                  </div>
+                  <div class="product-body">
+                    <small>罗小黑战记 · 黑金系列</small>
+                    <h3>罗小黑黑金立牌</h3>
+                    <span class="state-label state-presale">预售</span>
+                    <p class="price"><strong>59</strong><span>/件</span></p>
+                    <p class="stock muted"><i></i>预计 9 月发货</p>
+                  </div>
+                </article>
+
+                <article class="product-card" tabindex="0" data-product="纸房子胶片收藏卡">
+                  <div class="product-media square">
+                    <img src="./assets/product-05.png" alt="纸房子胶片收藏卡" />
+                    <span class="type-badge badge-pool">赏池</span>
+                  </div>
+                  <div class="product-body">
+                    <small>纸房子 · 胶片系列</small>
+                    <h3>纸房子胶片收藏卡</h3>
+                    <span class="state-label state-hot">本周上新</span>
+                    <p class="price"><strong>19.9</strong><span>/抽</span></p>
+                    <p class="stock"><i></i>剩余 126 份</p>
+                  </div>
+                </article>
+
+                <article class="product-card" tabindex="0" data-product="盗墓笔记夜行挂件">
+                  <div class="product-media tall">
+                    <img src="./assets/product-06.png" alt="盗墓笔记夜行挂件" />
+                    <span class="type-badge badge-draw">抽卡机</span>
+                  </div>
+                  <div class="product-body">
+                    <small>盗墓笔记 · 夜行系列</small>
+                    <h3>盗墓笔记夜行挂件</h3>
+                    <span class="state-label state-stock">现货</span>
+                    <p class="price"><strong>26</strong><span>/抽</span></p>
+                    <p class="stock"><i></i>剩余 72 份</p>
+                  </div>
+                </article>
+
+                <article class="product-card" tabindex="0" data-product="义勇果饮纪念徽章">
+                  <div class="product-media square">
+                    <img src="./assets/product-07.png" alt="义勇果饮纪念徽章" />
+                    <span class="type-badge badge-capsule">扭蛋机</span>
+                  </div>
+                  <div class="product-body">
+                    <small>鬼灭之刃 · 水柱系列</small>
+                    <h3>义勇果饮纪念徽章</h3>
+                    <span class="state-label state-remind">到货提醒</span>
+                    <p class="price"><strong>19.9</strong><span>/抽</span></p>
+                    <p class="stock"><i></i>现货充足</p>
+                  </div>
+                </article>
+
+                <article class="product-card" tabindex="0" data-product="蜜璃果饮亚克力立牌">
+                  <div class="product-media tall">
+                    <img src="./assets/product-08.png" alt="蜜璃果饮亚克力立牌" />
+                    <span class="type-badge badge-single">单品</span>
+                    <span class="media-state presale">预售</span>
+                  </div>
+                  <div class="product-body">
+                    <small>鬼灭之刃 · 恋柱系列</small>
+                    <h3>蜜璃果饮亚克力立牌</h3>
+                    <span class="state-label state-remind">到货提醒</span>
+                    <p class="price"><strong>29</strong><span>/件</span></p>
+                    <p class="stock muted"><i></i>支持合并发货</p>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section class="page-end" aria-label="加载状态">
+              <p>正在加载更多好物…</p>
+              <div class="skeleton-grid" aria-hidden="true">
+                <div class="skeleton-card"><i></i><span></span><span></span><span></span></div>
+                <div class="skeleton-card is-tall"><i></i><span></span><span></span><span></span></div>
+              </div>
+            </section>
+          </main>
+        </div>
+
+        <nav class="bottom-nav" aria-label="底部导航">
+          <button class="bottom-item is-active" type="button" data-nav="首页" data-target="top" aria-current="page">
+            <span class="active-line"></span><span class="icon-surface"><img src="./assets/icon-home.svg" alt="" /></span><span>首页</span>
+          </button>
+          <button class="bottom-item" type="button" data-nav="赏池" data-target="quickActions">
+            <span class="active-line"></span><span class="icon-surface"><img src="./assets/icon-pool.svg" alt="" /></span><span>赏池</span>
+          </button>
+          <button class="bottom-item" type="button" data-nav="抽卡" data-target="hero">
+            <span class="active-line"></span><span class="icon-surface"><img src="./assets/icon-draw.svg" alt="" /></span><span>抽卡</span>
+          </button>
+          <button class="bottom-item has-badge" type="button" data-nav="购物车">
+            <span class="active-line"></span><span class="icon-surface"><img src="./assets/icon-cart.svg" alt="" /></span><span>购物车</span><b>2</b>
+          </button>
+          <button class="bottom-item" type="button" data-nav="我的">
+            <span class="active-line"></span><span class="icon-surface"><img src="./assets/icon-mine.svg" alt="" /></span><span>我的</span>
+          </button>
+          <div class="home-indicator" aria-hidden="true"></div>
+        </nav>
+
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
