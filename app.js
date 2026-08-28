@@ -485,6 +485,8 @@ const skuTotal = document.querySelector("#skuTotal");
 const skuConfirmButton = document.querySelector("[data-confirm-sku]");
 const cartList = document.querySelector(".cart-list");
 const cartTotal = document.querySelector("#cartTotal");
+const cartSummaryLabel = document.querySelector("#cartSummaryLabel");
+const cartSummaryNote = document.querySelector("#cartSummaryNote");
 const checkoutSubtotal = document.querySelector("#checkoutSubtotal");
 const checkoutDiscount = document.querySelector("#checkoutDiscount");
 const checkoutTotal = document.querySelector("#checkoutTotal");
@@ -748,7 +750,9 @@ function updateCart() {
   const selected = scopedItems.filter((item) => item.classList.contains("is-selected"));
   const selectedQuantity = selected.reduce((sum, item) => sum + Number(item.dataset.quantity), 0);
   const total = selected.reduce((sum, item) => sum + Number(item.dataset.price) * Number(item.dataset.quantity), 0);
-  cartTotal.textContent = `¥${formatMoney(total)}`;
+  cartSummaryLabel.textContent = cartManaging ? "已选" : "合计";
+  cartTotal.textContent = cartManaging ? `${selected.length} 种` : `¥${formatMoney(total)}`;
+  cartSummaryNote.textContent = cartManaging ? "仅删除所选商品" : "不含运费";
   checkoutButton.textContent = cartManaging
     ? `删除所选（${selected.length}种）`
     : `去结算（${selected.length}种 / ${selectedQuantity}件）`;
@@ -757,12 +761,11 @@ function updateCart() {
   const allSelected = scopedItems.length > 0 && selected.length === scopedItems.length;
   selectAllButton.classList.toggle("is-selected", allSelected);
   selectAllButton.setAttribute("aria-pressed", String(allSelected));
-  selectAllButton.querySelector("i").textContent = allSelected ? "✓" : "";
   items.forEach((item) => {
     const quantity = Number(item.dataset.quantity);
     const max = Number(item.dataset.maxQuantity || 9);
-    item.querySelector("[data-qty-action='minus']").disabled = quantity <= 1;
-    item.querySelector("[data-qty-action='plus']").disabled = quantity >= max;
+    item.querySelector("[data-qty-action='minus']").disabled = cartManaging || quantity <= 1;
+    item.querySelector("[data-qty-action='plus']").disabled = cartManaging || quantity >= max;
   });
   updateCartBadge();
 }
