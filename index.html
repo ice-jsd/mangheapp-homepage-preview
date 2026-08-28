@@ -46,7 +46,7 @@
               </button>
 
               <div class="toolbar-actions" aria-label="快捷操作">
-                <button type="button" aria-label="我的订单" data-toast="正在打开我的订单">
+                <button type="button" aria-label="我的订单" data-account-view="orders">
                   <img src="./assets/icon-order.svg" alt="" />
                 </button>
                 <button type="button" aria-label="个人中心" data-go-page="mine">
@@ -201,7 +201,7 @@
                 </button>
               </div>
               <div class="product-grid">
-                <article class="product-card" tabindex="0" data-product="炎柱燃魂纪念卡包">
+                <article class="product-card" role="button" tabindex="0" data-product="炎柱燃魂纪念卡包" data-ip="鬼灭之刃" data-kind="抽卡机" data-state="现货" data-price="29.9" data-shipping="48h 内发货">
                   <div class="product-media square">
                     <img src="./assets/product-01.png" alt="炎柱燃魂纪念卡包" />
                     <span class="type-badge badge-draw">抽卡机</span>
@@ -215,7 +215,7 @@
                   </div>
                 </article>
 
-                <article class="product-card" tabindex="0" data-product="炎柱鎏金亚克力砖">
+                <article class="product-card" role="button" tabindex="0" data-product="炎柱鎏金亚克力砖" data-ip="鬼灭之刃" data-kind="赏池" data-state="限量" data-price="39" data-shipping="仅余 42 抽">
                   <div class="product-media tall">
                     <img src="./assets/product-02.png" alt="炎柱鎏金亚克力砖" />
                     <span class="type-badge badge-pool">赏池</span>
@@ -230,7 +230,7 @@
                   </div>
                 </article>
 
-                <article class="product-card" tabindex="0" data-product="祢豆子软萌徽章套组">
+                <article class="product-card" role="button" tabindex="0" data-product="祢豆子软萌徽章套组" data-ip="鬼灭之刃" data-kind="单领" data-state="现货" data-price="49" data-shipping="48h 内发货">
                   <div class="product-media tall">
                     <img src="./assets/product-03.png" alt="祢豆子软萌徽章套组" />
                     <span class="type-badge badge-single">单领</span>
@@ -244,7 +244,7 @@
                   </div>
                 </article>
 
-                <article class="product-card" tabindex="0" data-product="罗小黑黑金立牌">
+                <article class="product-card" role="button" tabindex="0" data-product="罗小黑黑金立牌" data-ip="罗小黑战记" data-kind="单领" data-state="预售" data-price="59" data-shipping="预计 9 月发货">
                   <div class="product-media square">
                     <img src="./assets/product-04.png" alt="罗小黑黑金立牌" />
                     <span class="type-badge badge-single">单领</span>
@@ -259,7 +259,7 @@
                   </div>
                 </article>
 
-                <article class="product-card" tabindex="0" data-product="纸房子胶片收藏卡">
+                <article class="product-card" role="button" tabindex="0" data-product="纸房子胶片收藏卡" data-ip="纸房子" data-kind="赏池" data-state="上新" data-price="19.9" data-shipping="现货 · 48h 内发货">
                   <div class="product-media square">
                     <img src="./assets/product-05.png" alt="纸房子胶片收藏卡" />
                     <span class="type-badge badge-pool">赏池</span>
@@ -273,7 +273,7 @@
                   </div>
                 </article>
 
-                <article class="product-card" tabindex="0" data-product="盗墓笔记夜行挂件">
+                <article class="product-card" role="button" tabindex="0" data-product="盗墓笔记夜行挂件" data-ip="盗墓笔记" data-kind="抽卡机" data-state="现货" data-price="26" data-shipping="48h 内发货">
                   <div class="product-media tall">
                     <img src="./assets/product-06.png" alt="盗墓笔记夜行挂件" />
                     <span class="type-badge badge-draw">抽卡机</span>
@@ -287,7 +287,7 @@
                   </div>
                 </article>
 
-                <article class="product-card" tabindex="0" data-product="义勇果饮纪念徽章">
+                <article class="product-card" role="button" tabindex="0" data-product="义勇果饮纪念徽章" data-ip="鬼灭之刃" data-kind="扭蛋机" data-state="到货提醒" data-price="19.9" data-shipping="到货时间待定">
                   <div class="product-media square">
                     <img src="./assets/product-07.png" alt="义勇果饮纪念徽章" />
                     <span class="type-badge badge-capsule">扭蛋机</span>
@@ -297,11 +297,11 @@
                     <h3>义勇果饮纪念徽章</h3>
                     <span class="state-label state-remind">到货提醒</span>
                     <p class="price"><strong>19.9</strong><span>/抽</span></p>
-                    <p class="stock"><i></i>现货充足</p>
+                    <p class="stock muted"><i></i>开放到货订阅</p>
                   </div>
                 </article>
 
-                <article class="product-card" tabindex="0" data-product="蜜璃果饮亚克力立牌">
+                <article class="product-card" role="button" tabindex="0" data-product="蜜璃果饮亚克力立牌" data-ip="鬼灭之刃" data-kind="单领" data-state="预售" data-price="29" data-shipping="支持合并发货">
                   <div class="product-media tall">
                     <img src="./assets/product-08.png" alt="蜜璃果饮亚克力立牌" />
                     <span class="type-badge badge-single">单品</span>
@@ -310,12 +310,13 @@
                   <div class="product-body">
                     <small>鬼灭之刃 · 恋柱系列</small>
                     <h3>蜜璃果饮亚克力立牌</h3>
-                    <span class="state-label state-remind">到货提醒</span>
+                    <span class="state-label state-presale">预售</span>
                     <p class="price"><strong>29</strong><span>/件</span></p>
                     <p class="stock muted"><i></i>支持合并发货</p>
                   </div>
                 </article>
               </div>
+              <div class="empty-state" id="productEmpty" hidden><strong>暂无匹配商品</strong><span>换个 IP 或频道看看</span></div>
             </section>
 
             <section class="page-end" aria-label="加载状态">
@@ -333,27 +334,27 @@
               <div class="subpage-title-row">
                 <span class="title-icon"><img src="./assets/icon-pool.svg" alt="" /></span>
                 <h1>赏池</h1>
-                <button class="outline-pill" type="button" data-toast="已打开抽赏记录">抽赏记录</button>
+                <button class="outline-pill" type="button" data-account-view="records">抽赏记录</button>
               </div>
               <button class="page-search" type="button" data-open-search>
                 <img src="./assets/icon-search.svg" alt="" />
                 <span>搜索赏池、IP 或赏品</span><b>热搜</b>
               </button>
-              <div class="segmented-tabs" role="tablist" aria-label="赏池分类">
-                <button class="is-active" type="button" role="tab" aria-selected="true">综合</button>
-                <button type="button" role="tab" aria-selected="false">一番赏</button>
-                <button type="button" role="tab" aria-selected="false">抽卡机</button>
-                <button type="button" role="tab" aria-selected="false">即将结束</button>
+              <div class="segmented-tabs" role="group" aria-label="赏池分类">
+                <button class="is-active" type="button" aria-pressed="true" data-pool-type="综合">综合</button>
+                <button type="button" aria-pressed="false" data-pool-type="一番赏">一番赏</button>
+                <button type="button" aria-pressed="false" data-pool-type="抽卡机">抽卡机</button>
+                <button type="button" aria-pressed="false" data-pool-type="即将结束">即将结束</button>
               </div>
             </header>
 
             <main class="pool-content">
-              <article class="pool-feature" data-product="鬼灭之刃 · 柱集合赏" tabindex="0">
+              <article class="pool-feature" data-pool="鬼灭之刃 · 柱集合赏" data-pool-ip="鬼灭之刃" data-pool-type="一番赏" data-remaining="42" data-popularity="286">
                 <div class="pool-feature-copy">
                   <span>本周热池</span>
                   <h2>鬼灭之刃 · 柱集合赏</h2>
                   <p>剩余 42 份 · 286 人参与</p>
-                  <button type="button" data-toast="已进入柱集合赏">进入赏池 →</button>
+                  <button type="button" data-open-pool>进入赏池 →</button>
                 </div>
                 <img src="./assets/quick-pool.png" alt="柱集合赏奖品" />
               </article>
@@ -361,13 +362,14 @@
               <section class="pool-ip-section" aria-labelledby="poolIpTitle">
                 <div class="section-heading pool-heading">
                   <h2 id="poolIpTitle">按 IP 找赏池</h2>
-                  <button type="button" data-toast="已展开全部 IP">全部 IP →</button>
+                  <button type="button" data-pool-reset>全部 IP →</button>
                 </div>
-                <div class="pool-ip-grid">
-                  <button type="button" data-toast="筛选鬼灭之刃赏池"><b>1</b><span><strong>鬼灭之刃</strong><small>24池</small></span></button>
-                  <button type="button" data-toast="筛选咒术回战赏池"><b>2</b><span><strong>咒术回战</strong><small>18池</small></span></button>
-                  <button type="button" data-toast="筛选排球少年赏池"><b>3</b><span><strong>排球少年</strong><small>15池</small></span></button>
-                  <button type="button" data-toast="查看全部 IP"><b>＋</b><span><strong>更多</strong><small>全部</small></span></button>
+                <div class="pool-ip-grid" role="group" aria-label="按 IP 筛选赏池">
+                  <button class="is-active" type="button" aria-pressed="true" data-pool-ip-filter="全部"><b>ALL</b><span><strong>全部 IP</strong><small>4 池</small></span></button>
+                  <button type="button" aria-pressed="false" data-pool-ip-filter="鬼灭之刃"><b>鬼</b><span><strong>鬼灭之刃</strong><small>2 池</small></span></button>
+                  <button type="button" aria-pressed="false" data-pool-ip-filter="盗墓笔记"><b>盗</b><span><strong>盗墓笔记</strong><small>1 池</small></span></button>
+                  <button type="button" aria-pressed="false" data-pool-ip-filter="纸房子"><b>纸</b><span><strong>纸房子</strong><small>1 池</small></span></button>
+                  <button type="button" aria-pressed="false" data-pool-ip-filter="罗小黑战记"><b>罗</b><span><strong>罗小黑战记</strong><small>1 池</small></span></button>
                 </div>
               </section>
 
@@ -375,36 +377,37 @@
                 <div class="section-heading pool-heading">
                   <h2 id="hotPoolTitle">正在热抽</h2>
                   <div class="mini-filter" role="group" aria-label="热抽排序">
-                    <button class="is-active" type="button">最新</button><button type="button">人气</button><button type="button">将结束</button>
+                    <button class="is-active" type="button" aria-pressed="true" data-pool-sort="最新">最新</button><button type="button" aria-pressed="false" data-pool-sort="人气">人气</button><button type="button" aria-pressed="false" data-pool-sort="将结束">将结束</button>
                   </div>
                 </div>
                 <div class="pool-grid">
-                  <article class="pool-card" data-product="盗墓笔记 · 星河旅程" tabindex="0">
+                  <article class="pool-card" role="button" tabindex="0" data-pool="盗墓笔记 · 星河旅程" data-pool-ip="盗墓笔记" data-pool-type="一番赏" data-remaining="3" data-popularity="198">
                     <div><img src="./assets/product-01.png" alt="盗墓笔记星河旅程" /><span>一番赏</span></div>
                     <h3>盗墓笔记 · 星河旅程</h3><p>剩余 3/10 箱 · 198人</p><i style="--progress:70%"></i>
                   </article>
-                  <article class="pool-card" data-go-page="draw" tabindex="0">
+                  <article class="pool-card" role="button" tabindex="0" data-pool="炎柱纪念卡包" data-pool-ip="鬼灭之刃" data-pool-type="抽卡机" data-remaining="31" data-popularity="96" data-pool-destination="draw">
                     <div><img src="./assets/product-02.png" alt="炎柱纪念卡包" /><span>抽卡机</span></div>
                     <h3>炎柱纪念卡包</h3><p>剩余 31 份 · 96人</p><i style="--progress:48%"></i>
                   </article>
-                  <article class="pool-card" data-product="纸房子胶片收藏赏" tabindex="0">
+                  <article class="pool-card" role="button" tabindex="0" data-pool="纸房子胶片收藏赏" data-pool-ip="纸房子" data-pool-type="一番赏" data-remaining="66" data-popularity="72">
                     <div><img src="./assets/product-05.png" alt="纸房子胶片收藏赏" /><span>一番赏</span></div>
                     <h3>纸房子胶片收藏赏</h3><p>剩余 66 份 · 72人</p><i style="--progress:62%"></i>
                   </article>
-                  <article class="pool-card" data-product="罗小黑治愈盲盒" tabindex="0">
+                  <article class="pool-card" role="button" tabindex="0" data-pool="罗小黑治愈盲盒" data-pool-ip="罗小黑战记" data-pool-type="一番赏" data-remaining="18" data-popularity="121">
                     <div><img src="./assets/product-04.png" alt="罗小黑治愈盲盒" /><span>赏池</span></div>
                     <h3>罗小黑治愈盲盒</h3><p>剩余 18 份 · 121人</p><i style="--progress:82%"></i>
                   </article>
                 </div>
+                <div class="empty-state" id="poolEmpty" hidden><strong>暂无匹配赏池</strong><span>试试切换分类或 IP</span></div>
               </section>
             </main>
           </section>
 
           <section class="app-page draw-page" id="page-draw" data-page="draw" aria-label="抽卡机">
             <header class="draw-header">
-              <button class="round-control" type="button" data-go-page="home" aria-label="返回首页">‹</button>
+              <button class="round-control" type="button" data-go-page="home" aria-label="返回首页"><img src="./assets/icon-back.svg" alt="" /></button>
               <h1><span>✦</span> 抽卡机</h1>
-              <button class="round-control" type="button" data-toast="分享口令已复制" aria-label="分享">⌯</button>
+              <button class="round-control" type="button" data-toast="分享口令已复制" aria-label="分享"><img src="./assets/icon-share.svg" alt="" /></button>
             </header>
             <main class="draw-content">
               <article class="draw-campaign">
@@ -430,7 +433,7 @@
               </article>
 
               <section class="draw-console" aria-labelledby="drawCountTitle">
-                <div class="console-title"><h2 id="drawCountTitle">选择抽取数量</h2><p>确认后进入支付</p></div>
+                <div class="console-title"><h2 id="drawCountTitle">选择模拟抽取数量</h2><p>下一步确认金额与模拟支付</p></div>
                 <div class="draw-options">
                   <button type="button" data-draw-count="整盒抽" data-draw-price="116"><span>组合优惠</span><strong>整盒抽</strong><b>¥116</b></button>
                   <button class="is-recommended" type="button" data-draw-count="抽 1 包" data-draw-price="20"><span>推荐</span><strong>抽 1 包</strong><b>¥20</b></button>
@@ -443,49 +446,49 @@
           <section class="app-page cart-page" id="page-cart" data-page="cart" aria-label="购物车">
             <header class="simple-header"><h1>购物车</h1><button type="button" data-cart-manage>管理</button></header>
             <main class="cart-content">
-              <div class="cart-tabs" role="tablist"><button class="is-active" type="button">全部 3</button><button type="button">现货 2</button><button type="button">预售 1</button></div>
+              <div class="cart-tabs" role="group" aria-label="购物车筛选"><button class="is-active" type="button" aria-pressed="true" data-cart-filter="全部">全部 3</button><button type="button" aria-pressed="false" data-cart-filter="现货">现货 2</button><button type="button" aria-pressed="false" data-cart-filter="预售">预售 1</button></div>
               <div class="cart-list">
-                <article class="cart-item is-selected" data-price="69" data-quantity="1">
+                <article class="cart-item is-selected" data-cart-id="rengoku-figure" data-state="现货" data-price="69" data-quantity="1">
                   <button class="cart-check" type="button" aria-pressed="true" aria-label="选择炎柱纪念公仔">✓</button>
                   <img src="./assets/product-01.png" alt="炎柱纪念公仔" />
-                  <div class="cart-item-info"><span class="cart-state stock-state">现货</span><h2>炎柱纪念公仔</h2><p>现货 · 48小时内发货</p><strong>¥69</strong><div class="qty-control"><button type="button" data-qty-action="minus">−</button><b>1</b><button type="button" data-qty-action="plus">＋</button></div></div>
+                  <div class="cart-item-info"><span class="cart-state stock-state">现货</span><h2>炎柱纪念公仔</h2><p>现货 · 48小时内发货</p><strong>¥69</strong><div class="qty-control"><button type="button" data-qty-action="minus" aria-label="减少炎柱纪念公仔数量">−</button><b>1</b><button type="button" data-qty-action="plus" aria-label="增加炎柱纪念公仔数量">＋</button></div></div>
                 </article>
-                <article class="cart-item is-selected" data-price="129" data-quantity="1">
+                <article class="cart-item is-selected" data-cart-id="pillar-set" data-state="现货" data-price="129" data-quantity="1">
                   <button class="cart-check" type="button" aria-pressed="true" aria-label="选择柱集结限定摆件">✓</button>
                   <img src="./assets/quick-pool.png" alt="柱集结限定摆件" />
-                  <div class="cart-item-info"><span class="cart-state stock-state">现货</span><h2>柱集结限定摆件</h2><p>现货 · 官方正品</p><strong>¥129</strong><div class="qty-control"><button type="button" data-qty-action="minus">−</button><b>1</b><button type="button" data-qty-action="plus">＋</button></div></div>
+                  <div class="cart-item-info"><span class="cart-state stock-state">现货</span><h2>柱集结限定摆件</h2><p>现货 · 官方正品</p><strong>¥129</strong><div class="qty-control"><button type="button" data-qty-action="minus" aria-label="减少柱集结限定摆件数量">−</button><b>1</b><button type="button" data-qty-action="plus" aria-label="增加柱集结限定摆件数量">＋</button></div></div>
                 </article>
-                <article class="cart-item" data-price="39" data-quantity="1">
+                <article class="cart-item" data-cart-id="mitsuri-stand" data-state="预售" data-price="39" data-quantity="1">
                   <button class="cart-check" type="button" aria-pressed="false" aria-label="选择蜜璃亚克力立牌"></button>
                   <img src="./assets/product-08.png" alt="蜜璃亚克力立牌" />
-                  <div class="cart-item-info"><span class="cart-state presale-state">预售</span><h2>蜜璃亚克力立牌</h2><p>预售 · 预计 10 月发货</p><strong>¥39</strong><div class="qty-control"><button type="button" data-qty-action="minus">−</button><b>1</b><button type="button" data-qty-action="plus">＋</button></div></div>
+                  <div class="cart-item-info"><span class="cart-state presale-state">预售</span><h2>蜜璃亚克力立牌</h2><p>预售 · 预计 10 月发货</p><strong>¥39</strong><div class="qty-control"><button type="button" data-qty-action="minus" aria-label="减少蜜璃亚克力立牌数量">−</button><b>1</b><button type="button" data-qty-action="plus" aria-label="增加蜜璃亚克力立牌数量">＋</button></div></div>
                 </article>
               </div>
             </main>
             <div class="cart-checkout">
               <button class="select-all is-selected" type="button" aria-pressed="true"><i>✓</i>全选</button>
               <div><span>合计</span><strong id="cartTotal">¥198</strong><small>不含运费</small></div>
-              <button class="checkout-button" type="button" data-open-checkout>去结算 (2)</button>
+              <button class="checkout-button" type="button" data-open-checkout>去结算（2种 / 2件）</button>
             </div>
           </section>
 
           <section class="app-page mine-page" id="page-mine" data-page="mine" aria-label="我的">
             <header class="profile-hero">
               <div class="profile-line"><span class="profile-avatar"><img src="./assets/product-01.png" alt="用户头像" /></span><div><h1>谷多多用户</h1><p>普通会员 · ID 208826</p></div><button type="button" data-toast="签到成功，积分 +5">每日签到</button></div>
-              <div class="profile-stats"><button type="button" data-toast="8 件待发货"><strong>8</strong><span>待发货</span></button><button type="button" data-toast="2 件待收货"><strong>2</strong><span>待收货</span></button><button type="button" data-toast="3 张优惠券"><strong>3</strong><span>优惠券</span></button><button type="button" data-toast="12 条抽赏记录"><strong>12</strong><span>抽赏记录</span></button></div>
+              <div class="profile-stats"><button type="button" data-account-view="orders" data-account-filter="待发货"><strong>1</strong><span>待发货</span></button><button type="button" data-account-view="orders" data-account-filter="待收货"><strong>1</strong><span>待收货</span></button><button type="button" data-account-view="coupons"><strong>3</strong><span>优惠券</span></button><button type="button" data-account-view="records"><strong>12</strong><span>抽赏记录</span></button></div>
             </header>
             <main class="mine-content">
               <section class="account-card order-card">
-                <div class="account-title"><h2>我的订单</h2><button type="button" data-open-orders>全部订单 ›</button></div>
-                <div class="order-shortcuts"><button type="button" data-toast="查看待付款订单"><b>¥</b><span>待付款</span></button><button type="button" data-toast="查看待发货订单"><b>▣</b><span>待发货</span></button><button type="button" data-toast="查看待收货订单"><b>□</b><span>待收货</span></button><button type="button" data-toast="查看售后服务"><b>↺</b><span>售后</span></button></div>
+                <div class="account-title"><h2>我的订单</h2><button type="button" data-account-view="orders">全部订单 ›</button></div>
+                <div class="order-shortcuts"><button type="button" data-account-view="orders" data-account-filter="待付款"><b><img src="./assets/icon-wallet.svg" alt="" /></b><span>待付款</span></button><button type="button" data-account-view="orders" data-account-filter="待发货"><b><img src="./assets/icon-box.svg" alt="" /></b><span>待发货</span></button><button type="button" data-account-view="orders" data-account-filter="待收货"><b><img src="./assets/icon-truck.svg" alt="" /></b><span>待收货</span></button><button type="button" data-account-view="after-sale"><b><img src="./assets/icon-refund.svg" alt="" /></b><span>售后</span></button></div>
               </section>
               <section class="prize-card">
-                <div><h2>我的赏品</h2><p>中奖与购买商品统一管理</p><button type="button" data-toast="已打开我的赏品">查看我的赏品 →</button></div>
+                <div><h2>我的赏品</h2><p>中奖与购买商品统一管理</p><button type="button" data-account-view="prizes">查看我的赏品 →</button></div>
                 <div><img src="./assets/product-01.png" alt="炎柱公仔" /><img src="./assets/product-08.png" alt="蜜璃立牌" /></div>
               </section>
               <section class="account-card service-card">
                 <h2>常用服务</h2>
-                <div class="service-grid"><button type="button" data-toast="已打开收货地址"><b><img src="./assets/icon-profile.svg" alt="" /></b><span>收货地址</span></button><button type="button" data-toast="已打开客服中心"><b><img src="./assets/icon-order.svg" alt="" /></b><span>客服中心</span></button><button type="button" data-toast="已打开优惠券"><b><img src="./assets/icon-crystal.svg" alt="" /></b><span>优惠券</span></button><button type="button" data-toast="已打开邀请有礼"><b><img src="./assets/icon-draw.svg" alt="" /></b><span>邀请有礼</span></button><button type="button" data-toast="已打开隐私设置"><b><img src="./assets/icon-mine.svg" alt="" /></b><span>隐私设置</span></button><button type="button" data-toast="谷多多 Preview v1.0"><b><img src="./assets/icon-home.svg" alt="" /></b><span>关于我们</span></button></div>
+                <div class="service-grid"><button type="button" data-account-view="address"><b><img src="./assets/icon-profile.svg" alt="" /></b><span>收货地址</span></button><button type="button" data-account-view="support"><b><img src="./assets/icon-order.svg" alt="" /></b><span>客服中心</span></button><button type="button" data-account-view="coupons"><b><img src="./assets/icon-crystal.svg" alt="" /></b><span>优惠券</span></button><button type="button" data-account-view="invite"><b><img src="./assets/icon-draw.svg" alt="" /></b><span>邀请有礼</span></button><button type="button" data-account-view="privacy"><b><img src="./assets/icon-mine.svg" alt="" /></b><span>隐私设置</span></button><button type="button" data-account-view="about"><b><img src="./assets/icon-home.svg" alt="" /></b><span>关于我们</span></button></div>
               </section>
             </main>
           </section>
@@ -502,7 +505,7 @@
             <span class="active-line"></span><span class="icon-surface"><img src="./assets/icon-draw.svg" alt="" /></span><span>抽卡</span>
           </button>
           <button class="bottom-item has-badge" type="button" data-nav="购物车" data-page-target="cart">
-            <span class="active-line"></span><span class="icon-surface"><img src="./assets/icon-cart.svg" alt="" /></span><span>购物车</span><b>2</b>
+            <span class="active-line"></span><span class="icon-surface"><img src="./assets/icon-cart.svg" alt="" /></span><span>购物车</span><b>3</b>
           </button>
           <button class="bottom-item" type="button" data-nav="我的" data-page-target="mine">
             <span class="active-line"></span><span class="icon-surface"><img src="./assets/icon-mine.svg" alt="" /></span><span>我的</span>
@@ -510,32 +513,45 @@
           <div class="home-indicator" aria-hidden="true"></div>
         </nav>
 
-        <section class="app-overlay search-overlay" id="searchOverlay" aria-hidden="true" aria-label="搜索">
-          <header class="overlay-header"><button type="button" data-close-overlay aria-label="关闭搜索">‹</button><form id="globalSearchForm"><img src="./assets/icon-search.svg" alt="" /><input id="globalSearchInput" type="search" placeholder="搜 IP、角色、商品" autocomplete="off" /><button type="submit">搜索</button></form></header>
+        <section class="app-overlay search-overlay" id="searchOverlay" role="dialog" aria-modal="true" aria-labelledby="searchDialogTitle" hidden>
+          <header class="overlay-header"><button type="button" data-close-overlay aria-label="关闭搜索"><img src="./assets/icon-back.svg" alt="" /></button><form id="globalSearchForm"><img src="./assets/icon-search.svg" alt="" /><label class="sr-only" id="searchDialogTitle" for="globalSearchInput">搜索商品与赏池</label><input id="globalSearchInput" type="search" placeholder="搜 IP、角色、商品" autocomplete="off" /><button type="submit">搜索</button></form></header>
           <div class="search-content">
-            <div class="search-block"><div><h2>最近搜索</h2><button type="button" data-clear-history>清空</button></div><p id="searchHistory"><button type="button">炎柱</button><button type="button">罗小黑</button><button type="button">现货徽章</button></p></div>
-            <div class="search-block"><div><h2>大家都在搜</h2><span>实时热度</span></div><ol><li><button type="button"><b>01</b><span>鬼灭之刃限定</span><em>12.8k</em></button></li><li><button type="button"><b>02</b><span>炎柱燃魂卡包</span><em>9.4k</em></button></li><li><button type="button"><b>03</b><span>48h 现货速发</span><em>7.2k</em></button></li><li><button type="button"><b>04</b><span>罗小黑黑金立牌</span><em>5.8k</em></button></li></ol></div>
+            <div class="search-block search-default-block"><div><h2>最近搜索</h2><button type="button" data-clear-history>清空</button></div><p id="searchHistory"><button type="button" data-search-query="炎柱">炎柱</button><button type="button" data-search-query="罗小黑">罗小黑</button><button type="button" data-search-query="现货">现货徽章</button></p></div>
+            <div class="search-block search-default-block"><div><h2>大家都在搜</h2><span>实时热度</span></div><ol><li><button type="button" data-search-query="鬼灭之刃"><b>01</b><span>鬼灭之刃限定</span><em>12.8k</em></button></li><li><button type="button" data-search-query="炎柱"><b>02</b><span>炎柱燃魂卡包</span><em>9.4k</em></button></li><li><button type="button" data-search-query="现货"><b>03</b><span>48h 现货速发</span><em>7.2k</em></button></li><li><button type="button" data-search-query="罗小黑"><b>04</b><span>罗小黑黑金立牌</span><em>5.8k</em></button></li></ol></div>
+            <div class="search-results" id="searchResults" hidden><div class="search-results-title"><div><span>SEARCH RESULT</span><h2 id="searchResultTitle">搜索结果</h2></div><button type="button" data-reset-search>重置</button></div><div class="search-result-list" id="searchResultList"></div><div class="empty-state" id="searchEmpty" hidden><strong>没有找到相关内容</strong><span>试试 IP、角色名或“现货”</span></div></div>
           </div>
         </section>
 
         <div class="sheet-backdrop" id="sheetBackdrop" aria-hidden="true"></div>
-        <section class="bottom-sheet product-sheet" id="productSheet" aria-hidden="true" aria-label="商品详情">
+        <section class="bottom-sheet product-sheet" id="productSheet" role="dialog" aria-modal="true" aria-labelledby="sheetProductTitle" hidden>
           <button class="sheet-close" type="button" data-close-sheet aria-label="关闭详情">×</button>
-          <div class="sheet-product"><img id="sheetProductImage" src="./assets/product-01.png" alt="商品" /><div><span>官方授权 · 正品保障</span><h2 id="sheetProductTitle">炎柱燃魂纪念卡包</h2><p>支持积分抵扣 · 48h 内发货</p></div></div>
+          <div class="sheet-product"><img id="sheetProductImage" src="./assets/product-01.png" alt="商品" /><div><span id="sheetProductState">官方授权 · 正品保障</span><h2 id="sheetProductTitle">炎柱燃魂纪念卡包</h2><p id="sheetProductMeta">现货 · 48h 内发货</p><strong id="sheetProductPrice">¥29.9</strong></div></div>
           <div class="sheet-benefits"><span>✓ 正品保障</span><span>✓ 破损包赔</span><span>✓ 售后无忧</span></div>
           <div class="sheet-actions"><button type="button" data-sheet-cart>加入购物车</button><button type="button" data-sheet-buy>立即购买</button></div>
         </section>
 
-        <section class="bottom-sheet checkout-sheet" id="checkoutSheet" aria-hidden="true" aria-label="确认结算">
+        <section class="bottom-sheet checkout-sheet" id="checkoutSheet" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle" hidden>
           <button class="sheet-close" type="button" data-close-sheet aria-label="关闭结算">×</button>
-          <span class="sheet-kicker">ORDER CONFIRM</span><h2>确认本次结算</h2>
+          <span class="sheet-kicker">ORDER CONFIRM</span><h2 id="checkoutTitle">确认本次结算</h2>
           <div class="checkout-address"><b>收</b><div><strong>谷多多用户 138****8266</strong><p>上海市徐汇区 · 默认收货地址</p></div><span>›</span></div>
           <div class="checkout-row"><span>商品金额</span><b id="checkoutSubtotal">¥198</b></div><div class="checkout-row"><span>运费</span><b>¥0</b></div><div class="checkout-row checkout-total"><span>应付合计</span><b id="checkoutTotal">¥198</b></div>
-          <button class="confirm-pay" type="button" data-confirm-pay>确认支付</button>
+          <button class="confirm-pay" type="button" data-confirm-pay>提交模拟订单</button>
         </section>
 
-        <section class="result-modal" id="drawResult" aria-hidden="true" aria-label="抽卡结果">
-          <div class="result-spark" aria-hidden="true">✦</div><span>CONGRATULATIONS</span><h2>抽中了限定款！</h2><img src="./assets/product-01.png" alt="炎柱限定公仔" /><strong>炼狱杏寿郎 · 燃魂款</strong><p>已自动存入「我的赏品」</p><button type="button" data-close-result>收下好运</button>
+        <section class="bottom-sheet pool-sheet" id="poolSheet" role="dialog" aria-modal="true" aria-labelledby="poolSheetTitle" hidden>
+          <button class="sheet-close" type="button" data-close-sheet aria-label="关闭赏池详情">×</button><span class="sheet-kicker">POOL DETAIL</span><h2 id="poolSheetTitle">鬼灭之刃 · 柱集合赏</h2><p id="poolSheetMeta">剩余 42 份 · 286 人参与</p><div class="pool-rules"><span>奖池</span><b>限定摆件 / 徽章 / 收藏卡</b><span>规则</span><b>每抽必得 · 稀有款概率 8%</b></div><button class="confirm-pay" type="button" data-enter-pool>参与本赏池</button>
+        </section>
+
+        <section class="bottom-sheet draw-confirm-sheet" id="drawConfirmSheet" role="dialog" aria-modal="true" aria-labelledby="drawConfirmTitle" hidden>
+          <button class="sheet-close" type="button" data-close-sheet aria-label="关闭模拟抽取确认">×</button><span class="sheet-kicker">SIMULATED DRAW</span><h2 id="drawConfirmTitle">确认模拟抽取</h2><p id="drawConfirmMeta">抽 1 包 · 共 ¥20</p><div class="draw-confirm-note">这是静态原型的模拟支付，不会产生真实扣款。确认后展示对应数量的模拟开包结果。</div><button class="confirm-pay" type="button" data-confirm-draw>确认并模拟开包</button>
+        </section>
+
+        <section class="bottom-sheet account-sheet" id="accountSheet" role="dialog" aria-modal="true" aria-labelledby="accountSheetTitle" hidden>
+          <button class="sheet-close" type="button" data-close-sheet aria-label="关闭个人中心详情">×</button><span class="sheet-kicker">MY GUJI</span><h2 id="accountSheetTitle">我的订单</h2><div class="account-sheet-list" id="accountSheetList"></div>
+        </section>
+
+        <section class="result-modal" id="drawResult" role="dialog" aria-modal="true" aria-labelledby="drawResultTitle" hidden>
+          <div class="result-spark" aria-hidden="true">✦</div><span>SIMULATED RESULT</span><h2 id="drawResultTitle">模拟抽中了限定款！</h2><img src="./assets/product-01.png" alt="炎柱限定公仔" /><strong>炼狱杏寿郎 · 燃魂款</strong><p id="drawResultMeta">1 件赏品已存入「我的赏品」</p><button type="button" data-close-result>收下好运</button>
         </section>
 
         <div class="toast" id="toast" role="status" aria-live="polite"></div>
