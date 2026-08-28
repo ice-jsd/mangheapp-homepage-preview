@@ -70,6 +70,32 @@ document.querySelectorAll("[data-toast]").forEach((control) => {
   });
 });
 
+const checkinControls = [...document.querySelectorAll("[data-checkin]")];
+let checkedInToday = false;
+
+function updateCheckinState() {
+  checkinControls.forEach((control) => {
+    control.classList.toggle("is-checked", checkedInToday);
+    control.disabled = checkedInToday;
+    control.setAttribute("aria-label", checkedInToday ? "今日已签到" : "每日签到");
+    const label = control.querySelector("span") || control;
+    if (label === control) control.textContent = checkedInToday ? "今日已签" : "每日签到";
+    else label.textContent = checkedInToday ? "今日已签" : "每日签到";
+  });
+}
+
+checkinControls.forEach((control) => control.addEventListener("click", () => {
+  if (checkedInToday) return;
+  checkedInToday = true;
+  updateCheckinState();
+  showToast("签到成功，积分 +5");
+}));
+
+document.querySelector(".brand-button")?.addEventListener("click", () => {
+  if (currentPage === "home") scrollToTarget("top");
+  else navigate("home", { reset: true });
+});
+
 document.querySelectorAll("[data-go-page]").forEach((control) => {
   control.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -201,6 +227,50 @@ document.querySelectorAll(".quick-card").forEach((card) => {
 
 document.querySelectorAll("[data-target]:not(.channel-tab):not(.quick-card)").forEach((control) => {
   control.addEventListener("click", () => scrollToTarget(control.dataset.target));
+});
+
+function selectHomeIp(ip) {
+  activeHomeIp = ip;
+  document.querySelectorAll(".ip-filter").forEach((item) => {
+    const selected = item.dataset.ip === ip;
+    item.classList.toggle("is-selected", selected);
+    item.setAttribute("aria-pressed", String(selected));
+  });
+}
+
+document.querySelector("[data-weekly-feature]")?.addEventListener("click", () => {
+  setChannelState("推荐");
+  selectHomeIp("鬼灭之刃");
+  applyHomeFilters({ announce: false });
+  scrollToTarget("products");
+  showToast("已进入义勇夜巡专题 · 5 件同系列商品");
+});
+
+const rankingSection = document.querySelector(".ranking-section");
+const rankingToggle = document.querySelector("[data-ranking-all]");
+rankingToggle?.addEventListener("click", () => {
+  const expanded = !rankingSection.classList.contains("is-expanded");
+  rankingSection.classList.toggle("is-expanded", expanded);
+  rankingToggle.setAttribute("aria-expanded", String(expanded));
+  rankingToggle.querySelector("span").textContent = expanded ? "收起榜单" : "查看全部";
+  showToast(expanded ? "已展开完整角色榜" : "已收起角色榜");
+});
+
+document.querySelectorAll("[data-rank-ip]").forEach((card) => card.addEventListener("click", () => {
+  setChannelState("推荐");
+  selectHomeIp(card.dataset.rankIp);
+  applyHomeFilters({ announce: false });
+  scrollToTarget("products");
+  showToast(`已展示 ${card.dataset.rankName} 的同 IP 商品`);
+}));
+
+let recommendationRound = 0;
+document.querySelector("[data-shuffle-products]")?.addEventListener("click", () => {
+  recommendationRound = (recommendationRound + 3) % productCards.length;
+  const reordered = [...productCards.slice(recommendationRound), ...productCards.slice(0, recommendationRound)];
+  const grid = document.querySelector(".product-grid");
+  reordered.forEach((card) => grid.append(card));
+  showToast("已更新推荐顺序");
 });
 
 /* Pool filters and detail */
@@ -517,6 +587,7 @@ let checkoutContext = { mode: "cart", items: [], subtotal: 0, discount: 0, total
 let activeCartFilter = "全部";
 let lastProductTrigger = null;
 let productReturnSearch = "";
+const favoriteProductIds = new Set();
 
 function formatMoney(value) {
   return Number(value.toFixed(2)).toString();
@@ -560,6 +631,13 @@ function renderProductDetail(product) {
   detailThumbTwo.src = product.image;
   detailStoryImage.src = product.image;
   detailStoryImage.alt = `${product.name}细节展示`;
+  const favoriteButton = document.querySelector("[data-detail-favorite]");
+  const isFavorite = favoriteProductIds.has(product.id);
+  favoriteButton.setAttribute("aria-pressed", String(isFavorite));
+  favoriteButton.textContent = isFavorite ? "♥" : "♡";
+  document.querySelectorAll("[data-detail-gallery]").forEach((button) => button.classList.toggle("is-active", button.dataset.detailGallery === "front"));
+  detailProductImage.classList.remove("show-package");
+  document.querySelectorAll("[data-detail-anchor]").forEach((button) => button.classList.toggle("is-active", button.dataset.detailAnchor === "detailStory"));
   detailGalleryBadge.textContent = `${product.kind} · 官方授权`;
   detailStateBadge.textContent = stateLabel;
   detailStateBadge.className = productStateClass(product.state);
@@ -647,6 +725,8 @@ document.querySelector("[data-detail-share]").addEventListener("click", async ()
 });
 document.querySelector("[data-detail-favorite]").addEventListener("click", (event) => {
   const selected = event.currentTarget.getAttribute("aria-pressed") !== "true";
+  if (selected) favoriteProductIds.add(currentProduct.id);
+  else favoriteProductIds.delete(currentProduct.id);
   event.currentTarget.setAttribute("aria-pressed", String(selected));
   event.currentTarget.textContent = selected ? "♥" : "♡";
   showToast(selected ? "已收藏到我的收藏" : "已取消收藏");
@@ -1063,10 +1143,32 @@ document.querySelectorAll("[data-pool]").forEach((pool) => {
 enterPoolButton.addEventListener("click", () => {
   const destination = currentPool?.dataset.poolDestination;
   closeDialog({ restoreFocus: false });
-  navigate(destination || "draw");
+  if (destination === "draw") {
+    navigate("draw");
+    return;
+  }
+  const name = currentPool?.dataset.pool || "限定赏池";
+  const ip = currentPool?.dataset.poolIp || "谷多多";
+  const price = 39;
+  openDrawConfirmation({
+    label: "抽 1 次",
+    count: 1,
+    price,
+    subtotal: price,
+    discount: 0,
+    trigger: currentPool,
+    sourceName: name,
+    sourceIp: ip,
+    sourceImage: currentPool?.querySelector("img")?.getAttribute("src") || "./assets/quick-pool.png",
+    catalog: poolPrizeCatalog[ip] || poolPrizeCatalog.default,
+    meta: "抽 1 次 · 每抽必得 1 件",
+  });
 });
 
 /* Draw payment and result */
+const drawConfirmImage = document.querySelector("#drawConfirmImage");
+const drawConfirmBrand = document.querySelector("#drawConfirmBrand");
+const drawConfirmName = document.querySelector("#drawConfirmName");
 const drawConfirmMeta = document.querySelector("#drawConfirmMeta");
 const drawConfirmPrice = document.querySelector("#drawConfirmPrice");
 const drawConfirmSubtotal = document.querySelector("#drawConfirmSubtotal");
@@ -1087,6 +1189,67 @@ const drawPrizeCatalog = [
   { name: "伊黑小芭内 · 果饮徽章", rarity: "C赏", image: "./assets/product-06.png" },
   { name: "炎柱 · 果饮亚克力立牌", rarity: "C赏", image: "./assets/product-03.png" },
 ];
+const poolPrizeCatalog = {
+  鬼灭之刃: [
+    { name: "柱集合限定亚克力摆件", rarity: "A赏", image: "./assets/product-03.png" },
+    { name: "柱集合角色徽章", rarity: "B赏", image: "./assets/product-01.png" },
+    { name: "柱集合主题收藏卡", rarity: "C赏", image: "./assets/product-04.png" },
+  ],
+  盗墓笔记: [
+    { name: "星河旅程限定摆件", rarity: "A赏", image: "./assets/product-daomu.svg" },
+    { name: "星河旅程角色徽章", rarity: "B赏", image: "./assets/product-daomu.svg" },
+    { name: "星河旅程收藏卡", rarity: "C赏", image: "./assets/product-daomu.svg" },
+  ],
+  纸房子: [
+    { name: "纸房子限定胶片立牌", rarity: "A赏", image: "./assets/product-paperhouse.svg" },
+    { name: "纸房子胶片徽章", rarity: "B赏", image: "./assets/product-paperhouse.svg" },
+    { name: "纸房子主题收藏卡", rarity: "C赏", image: "./assets/product-paperhouse.svg" },
+  ],
+  罗小黑战记: [
+    { name: "罗小黑治愈限定摆件", rarity: "A赏", image: "./assets/product-luoxiaohei.svg" },
+    { name: "罗小黑治愈徽章", rarity: "B赏", image: "./assets/product-luoxiaohei.svg" },
+    { name: "罗小黑治愈收藏卡", rarity: "C赏", image: "./assets/product-luoxiaohei.svg" },
+  ],
+  default: [{ name: "限定主题收藏赏品", rarity: "C赏", image: "./assets/quick-pool.png" }],
+};
+const drawPacks = [
+  { name: "炎柱纪念卡包", ip: "鬼灭之刃", image: "./assets/draw-pack.png", catalog: drawPrizeCatalog },
+  { name: "胶片收藏卡包", ip: "纸房子", image: "./assets/product-paperhouse.svg", catalog: poolPrizeCatalog.纸房子 },
+  { name: "星河旅程卡包", ip: "盗墓笔记", image: "./assets/product-daomu.svg", catalog: poolPrizeCatalog.盗墓笔记 },
+];
+let activeDrawPackIndex = 0;
+const drawCampaignTitle = document.querySelector("#drawCampaignTitle");
+const drawCampaignMeta = document.querySelector("#drawCampaignMeta");
+const drawPackImage = document.querySelector("[data-preview-card] img");
+
+function currentDrawPack() {
+  return drawPacks[activeDrawPackIndex];
+}
+
+function renderDrawPack() {
+  const pack = currentDrawPack();
+  drawCampaignTitle.textContent = `${pack.ip} · ${pack.name}`;
+  drawCampaignMeta.textContent = `全部 ${pack.catalog.length} 款 · 每包随机 1 款`;
+  drawPackImage.src = pack.image;
+  drawPackImage.alt = pack.name;
+}
+
+function openDrawConfirmation(draw) {
+  pendingDraw = draw;
+  drawConfirmImage.src = draw.sourceImage;
+  drawConfirmImage.alt = draw.sourceName;
+  drawConfirmBrand.textContent = `${draw.sourceIp} · 正版授权`;
+  drawConfirmName.textContent = draw.sourceName;
+  drawConfirmMeta.textContent = draw.meta || `${draw.label} · 每包随机 1 款`;
+  drawConfirmPrice.textContent = `¥${formatMoney(draw.price)}`;
+  drawConfirmSubtotal.textContent = `¥${formatMoney(draw.subtotal)}`;
+  drawConfirmDiscount.textContent = `−¥${formatMoney(draw.discount)}`;
+  drawConfirmTotal.textContent = `¥${formatMoney(draw.price)}`;
+  drawPayButton.disabled = false;
+  drawPayButton.classList.remove("is-paying");
+  updateDrawPaymentButton();
+  openDialog(drawConfirmSheet, draw.trigger);
+}
 
 function updateDrawPaymentButton() {
   if (!pendingDraw || drawPayButton.disabled) return;
@@ -1098,16 +1261,19 @@ document.querySelectorAll("[data-draw-count]").forEach((button) => button.addEve
   const count = label.includes("整盒") ? 6 : Number(label.match(/\d+/)?.[0] || 1);
   const price = Number(button.dataset.drawPrice);
   const subtotal = count * 20;
-  pendingDraw = { label, count, price, subtotal, discount: subtotal - price, trigger: button };
-  drawConfirmMeta.textContent = `${label} · 每包随机 1 款`;
-  drawConfirmPrice.textContent = `¥${formatMoney(price)}`;
-  drawConfirmSubtotal.textContent = `¥${formatMoney(subtotal)}`;
-  drawConfirmDiscount.textContent = `−¥${formatMoney(subtotal - price)}`;
-  drawConfirmTotal.textContent = `¥${formatMoney(price)}`;
-  drawPayButton.disabled = false;
-  drawPayButton.classList.remove("is-paying");
-  updateDrawPaymentButton();
-  openDialog(drawConfirmSheet, button);
+  const pack = currentDrawPack();
+  openDrawConfirmation({
+    label,
+    count,
+    price,
+    subtotal,
+    discount: subtotal - price,
+    trigger: button,
+    sourceName: pack.name,
+    sourceIp: pack.ip,
+    sourceImage: pack.image,
+    catalog: pack.catalog,
+  });
 }));
 
 drawPayButton.addEventListener("click", (event) => {
@@ -1120,10 +1286,13 @@ drawPayButton.addEventListener("click", (event) => {
   button.textContent = `${paymentMethod}支付中…`;
   window.setTimeout(() => {
     const drawOffset = newPrizeCount;
-    const prizes = Array.from({ length: draw.count }, (_, index) => drawPrizeCatalog[(drawOffset + index) % drawPrizeCatalog.length]);
+    const catalog = draw.catalog || drawPrizeCatalog;
+    const prizes = Array.from({ length: draw.count }, (_, index) => catalog[(drawOffset + index) % catalog.length]);
     newPrizeCount += draw.count;
     wonPrizes.unshift(...prizes);
-    accountContent.records.unshift(["炎柱纪念卡包", draw.label, `刚刚 · 实付 ¥${formatMoney(draw.price)}`]);
+    accountContent.records.unshift([draw.sourceName, draw.label, `刚刚 · 实付 ¥${formatMoney(draw.price)}`]);
+    const recordCount = document.querySelector("[data-record-count]");
+    if (recordCount) recordCount.textContent = String(Number(recordCount.textContent || 0) + 1);
     drawResultTitle.textContent = draw.count > 1 ? `恭喜获得 ${draw.count} 件赏品！` : "恭喜获得新赏品！";
     drawResultGrid.classList.toggle("is-single", draw.count === 1);
     drawResultGrid.innerHTML = prizes.map((prize) => `<article><img src="${prize.image}" alt="${prize.name}"><span>${prize.rarity}</span><strong>${prize.name}</strong></article>`).join("");
@@ -1134,8 +1303,6 @@ drawPayButton.addEventListener("click", (event) => {
   }, 760);
 });
 
-document.querySelector("[data-preview-card]").addEventListener("click", () => showToast("卡包内含 6 款，选择数量后即可抽取"));
-
 /* Account detail */
 const accountSheetTitle = document.querySelector("#accountSheetTitle");
 const accountSheetList = document.querySelector("#accountSheetList");
@@ -1143,12 +1310,12 @@ const accountContent = {
   orders: [["炎柱果饮纪念徽章", "待发货", "¥29.9"], ["柱集结限定摆件", "待收货", "¥129"], ["蜜璃亚克力立牌", "待付款", "¥39"]],
   records: [["炎柱纪念卡包", "抽 1 包", "今日 18:24"], ["柱集合赏", "一番赏", "昨日 21:08"]],
   coupons: [["新人满减券", "满 99 减 15", "7 天后到期"], ["包邮券", "全场可用", "30 天后到期"]],
-  "after-sale": [["售后服务", "暂无进行中的售后", "需要帮助请联系在线客服"]],
-  address: [["默认收货地址", "谷多多用户 138****8266", "上海市徐汇区"]],
-  support: [["在线客服", "工作日 09:00–21:00", "当前可咨询"]],
-  invite: [["邀请有礼", "每邀请 1 位好友得 20 积分", "分享码 GUJI2026"]],
-  privacy: [["隐私设置", "个性化推荐已开启", "可随时调整推荐偏好"]],
-  about: [["谷多多", "正版 IP 收藏与抽赏平台", "Version 2.1"]],
+  "after-sale": [["售后进度", "暂无进行中的售后", "已提交的申请会在此展示"], ["破损补寄", "签收后 48 小时内", "请保留外箱并上传开箱凭证"], ["退款说明", "按商品规则处理", "抽赏结果生成后不支持无理由取消"]],
+  address: [["默认收货地址", "谷多多用户 138****8266", "上海市徐汇区漕溪北路 88 号"], ["公司地址", "谷多多用户 138****8266", "上海市浦东新区张江路 66 号"]],
+  support: [["在线客服", "工作日 09:00–21:00", "当前可咨询"], ["订单问题", "提交订单号", "客服将在 10 分钟内响应"], ["售后专线", "400-826-2026", "工作日 09:00–18:00"]],
+  invite: [["邀请有礼", "每邀请 1 位好友得 20 积分", "分享码 GUJI2026"], ["本月进度", "已邀请 2 人", "再邀请 1 人可额外获得 30 积分"]],
+  privacy: [["个性化推荐", "已开启", "根据浏览与收藏优化推荐"], ["消息通知", "交易通知已开启", "营销通知保持关闭"], ["账号安全", "安全等级良好", "手机号 138****8266 已绑定"]],
+  about: [["谷多多", "正版 IP 收藏与抽赏平台", "Version 2.1"], ["用户协议与隐私政策", "2026-08-01 更新", "可在设置中随时查阅"], ["经营资质", "平台资质已公示", "正版授权信息随商品展示"]],
 };
 
 function openAccountView(view, filter = "", trigger = document.activeElement) {
@@ -1165,6 +1332,61 @@ function openAccountView(view, filter = "", trigger = document.activeElement) {
   accountSheetList.innerHTML = rows.map((row) => `<article><strong>${row[0]}</strong><span>${row[1]}</span><small>${row[2]}</small></article>`).join("");
   openDialog(accountSheet, trigger);
 }
+
+function openDrawInfo(view, trigger) {
+  const pack = currentDrawPack();
+  const configurations = {
+    probability: {
+      title: `${pack.name} · 概率公示`,
+      rows: [["A赏", "8%", "限定款 · 剩余库存实时计算"], ["B赏", "22%", "角色款 · 每包独立随机"], ["C赏", "70%", "常规款 · 每抽必得 1 件"]],
+    },
+    catalog: {
+      title: `${pack.name} · 赏品一览`,
+      rows: pack.catalog.map((prize, index) => [prize.name, prize.rarity, `款式 ${index + 1}/${pack.catalog.length} · 抽中后存入赏品柜`]),
+    },
+    details: {
+      title: `${pack.name} · 商品详情`,
+      rows: [["正版授权卡包", pack.ip, `全系列 ${pack.catalog.length} 款，单包随机 1 款`], ["发货说明", "现货", "预计 3–5 个工作日发出"], ["售后规则", "破损补寄", "抽取结果生成后不支持无理由取消"]],
+    },
+    benefits: {
+      title: "当前可用福利",
+      rows: [["整盒组合优惠", "立减 ¥4", "6 包原价 ¥120，组合价 ¥116"], ["多包优惠", "立减 ¥2", "3 包原价 ¥60，组合价 ¥58"], ["满额包邮", "满 ¥99", "同一订单现货商品可合并发货"]],
+    },
+    collection: {
+      title: `${pack.name} · 系列图鉴`,
+      rows: pack.catalog.map((prize, index) => [prize.name, index < Math.min(2, pack.catalog.length) ? "已点亮" : "待收集", `${prize.rarity} · ${index + 1}/${pack.catalog.length}`]),
+    },
+  };
+  const configuration = configurations[view];
+  if (!configuration) return;
+  accountContent[`draw-${view}`] = configuration.rows;
+  openAccountView(`draw-${view}`, configuration.title, trigger);
+}
+
+document.querySelectorAll("[data-draw-info]").forEach((button) => button.addEventListener("click", () => openDrawInfo(button.dataset.drawInfo, button)));
+document.querySelector("[data-preview-card]").addEventListener("click", (event) => openDrawInfo("catalog", event.currentTarget));
+document.querySelector("[data-change-pack]").addEventListener("click", () => {
+  activeDrawPackIndex = (activeDrawPackIndex + 1) % drawPacks.length;
+  renderDrawPack();
+  showToast(`已切换到${currentDrawPack().name}`);
+});
+document.querySelector("[data-draw-reminder]").addEventListener("click", (event) => {
+  const button = event.currentTarget;
+  const selected = button.getAttribute("aria-pressed") !== "true";
+  button.setAttribute("aria-pressed", String(selected));
+  button.classList.toggle("is-selected", selected);
+  button.querySelector("span").textContent = selected ? "已订阅" : "上新提醒";
+  showToast(selected ? "已订阅该系列上新提醒" : "已取消上新提醒");
+});
+document.querySelector("[data-draw-share]").addEventListener("click", async () => {
+  const shareUrl = `${window.location.href.split("#")[0]}#draw`;
+  try {
+    await navigator.clipboard.writeText(shareUrl);
+    showToast("卡包链接已复制");
+  } catch {
+    showToast("分享链接已生成");
+  }
+});
 
 document.querySelectorAll("[data-account-view]").forEach((button) => button.addEventListener("click", () => openAccountView(button.dataset.accountView, button.dataset.accountFilter || "", button)));
 
