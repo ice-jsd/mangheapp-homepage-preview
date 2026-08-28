@@ -566,6 +566,9 @@ const checkoutCoupon = document.querySelector("#checkoutCoupon");
 const checkoutAgreement = document.querySelector("#checkoutAgreement");
 const checkoutAddressOptions = document.querySelector("#checkoutAddressOptions");
 const checkoutAddressToggle = document.querySelector("[data-checkout-address-toggle]");
+const checkoutAddressName = document.querySelector("#checkoutAddressName");
+const checkoutAddressText = document.querySelector("#checkoutAddressText");
+const skuAddressText = document.querySelector("#skuAddressText");
 const checkoutScrollArea = document.querySelector(".checkout-scroll-area");
 const checkoutPayButton = document.querySelector("[data-confirm-pay]");
 const checkoutButton = document.querySelector("[data-open-checkout]");
@@ -583,11 +586,41 @@ let currentProduct = null;
 let currentSku = null;
 let skuQuantity = 1;
 let skuMode = "cart";
+const deliveryAddresses = [
+  { id: "xuhui", label: "家", name: "谷多多用户", phone: "138****8266", district: "上海市徐汇区", address: "上海市徐汇区漕溪北路 88 号", isDefault: true },
+  { id: "pudong", label: "公司", name: "谷多多用户", phone: "138****8266", district: "上海市浦东新区", address: "上海市浦东新区张江路 66 号", isDefault: false },
+];
+let activeAddressId = "xuhui";
+let pendingAccountAddressId = activeAddressId;
 let checkoutContext = { mode: "cart", items: [], subtotal: 0, discount: 0, total: 0 };
 let activeCartFilter = "全部";
 let lastProductTrigger = null;
 let productReturnSearch = "";
 const favoriteProductIds = new Set();
+
+function activeDeliveryAddress() {
+  return deliveryAddresses.find((address) => address.id === activeAddressId) || deliveryAddresses[0];
+}
+
+function syncDeliveryAddress() {
+  const address = activeDeliveryAddress();
+  const defaultCopy = address.isDefault ? " · 默认地址" : "";
+  detailDelivery.textContent = `${address.district} · ${currentProduct ? deliveryCopy(currentProduct) : "48 小时内发货"}`;
+  skuAddressText.textContent = `${address.district}${defaultCopy}`;
+  checkoutAddressName.textContent = `${address.name} ${address.phone}`;
+  checkoutAddressText.textContent = `${address.address}${defaultCopy}`;
+  checkoutAddressOptions.querySelectorAll("input[name='checkoutAddress']").forEach((input) => {
+    input.checked = input.value === address.id;
+  });
+}
+
+function useDeliveryAddress(addressId, announce = true) {
+  const address = deliveryAddresses.find((item) => item.id === addressId);
+  if (!address) return;
+  activeAddressId = address.id;
+  syncDeliveryAddress();
+  if (announce) showToast(`已使用${address.label}地址`);
+}
 
 function formatMoney(value) {
   return Number(value.toFixed(2)).toString();
@@ -648,7 +681,7 @@ function renderProductDetail(product) {
   detailSales.textContent = product.stock ? `已售 ${product.sold} · 剩余 ${product.stock} ${product.unit === "件" ? "件" : "抽"}` : `已售 ${product.sold} · 等待补货`;
   detailDescription.textContent = product.description;
   detailSelection.textContent = `${currentSku.label} · 1 ${product.unit === "件" ? "件" : "组"}`;
-  detailDelivery.textContent = `上海市徐汇区 · ${deliveryCopy(product)}`;
+  syncDeliveryAddress();
   detailStoryTitle.textContent = `${product.ip} · ${product.kind}收藏系列`;
   detailStoryCopy.textContent = product.description + " 商品采用独立保护包装，减少运输过程中的磨损。";
   detailSpecIp.textContent = product.ip;
@@ -762,6 +795,7 @@ function renderSkuSheet() {
   skuOptionList.innerHTML = currentProduct.options.map((option) => `<label class="${option.id === currentSku.id ? "is-selected" : ""}"><input type="radio" name="skuOption" value="${option.id}" ${option.id === currentSku.id ? "checked" : ""}><span><b>${option.label}</b><small>${option.detail}</small></span></label>`).join("");
   skuQuantityText.textContent = String(skuQuantity);
   skuLimitText.textContent = unavailable ? "补货时间待定" : `每人限购 ${currentProduct.maxQty} ${currentProduct.unit === "件" ? "件" : "组"}`;
+  syncDeliveryAddress();
   skuDeliveryText.textContent = deliveryCopy(currentProduct);
   skuTotal.textContent = unavailable ? "—" : `¥${formatMoney(currentSku.price * skuQuantity)}`;
   skuConfirmButton.textContent = unavailable ? "订阅到货提醒" : skuMode === "buy" ? "确认购买" : skuMode === "select" ? "确认选择" : "确认加入购物车";
@@ -952,6 +986,7 @@ function prepareCheckout(items, mode, trigger = document.activeElement) {
   checkoutPayButton.classList.remove("is-paying");
   checkoutAddressOptions.hidden = true;
   checkoutAddressToggle.setAttribute("aria-expanded", "false");
+  syncDeliveryAddress();
   checkoutScrollArea.scrollTop = 0;
   updateCheckoutTotals();
   openDialog(checkoutSheet, trigger);
@@ -1043,14 +1078,14 @@ checkoutAddressToggle.addEventListener("click", (event) => {
   event.currentTarget.setAttribute("aria-expanded", String(!checkoutAddressOptions.hidden));
 });
 checkoutAddressOptions.addEventListener("change", (event) => {
-  const usePudong = event.target.value === "浦东";
-  document.querySelector("#checkoutAddressText").textContent = usePudong ? "上海市浦东新区张江路 66 号" : "上海市徐汇区漕溪北路 88 号 · 默认地址";
+  useDeliveryAddress(event.target.value, false);
+  const address = activeDeliveryAddress();
   checkoutAddressOptions.hidden = true;
   checkoutAddressToggle.setAttribute("aria-expanded", "false");
   window.requestAnimationFrame(() => {
     checkoutScrollArea.scrollTo({ top: 0, behavior: "smooth" });
     checkoutAddressToggle.focus({ preventScroll: true });
-    showToast(usePudong ? "已切换为浦东地址" : "已切换为默认地址");
+    showToast(`已使用${address.label}地址`);
   });
 });
 
@@ -1311,16 +1346,39 @@ const accountContent = {
   records: [["炎柱纪念卡包", "抽 1 包", "今日 18:24"], ["柱集合赏", "一番赏", "昨日 21:08"]],
   coupons: [["新人满减券", "满 99 减 15", "7 天后到期"], ["包邮券", "全场可用", "30 天后到期"]],
   "after-sale": [["售后进度", "暂无进行中的售后", "已提交的申请会在此展示"], ["破损补寄", "签收后 48 小时内", "请保留外箱并上传开箱凭证"], ["退款说明", "按商品规则处理", "抽赏结果生成后不支持无理由取消"]],
-  address: [["默认收货地址", "谷多多用户 138****8266", "上海市徐汇区漕溪北路 88 号"], ["公司地址", "谷多多用户 138****8266", "上海市浦东新区张江路 66 号"]],
   support: [["在线客服", "工作日 09:00–21:00", "当前可咨询"], ["订单问题", "提交订单号", "客服将在 10 分钟内响应"], ["售后专线", "400-826-2026", "工作日 09:00–18:00"]],
   invite: [["邀请有礼", "每邀请 1 位好友得 20 积分", "分享码 GUJI2026"], ["本月进度", "已邀请 2 人", "再邀请 1 人可额外获得 30 积分"]],
   privacy: [["个性化推荐", "已开启", "根据浏览与收藏优化推荐"], ["消息通知", "交易通知已开启", "营销通知保持关闭"], ["账号安全", "安全等级良好", "手机号 138****8266 已绑定"]],
-  about: [["谷多多", "正版 IP 收藏与抽赏平台", "Version 2.1"], ["用户协议与隐私政策", "2026-08-01 更新", "可在设置中随时查阅"], ["经营资质", "平台资质已公示", "正版授权信息随商品展示"]],
+  about: [["谷多多", "正版 IP 收藏与抽赏平台", "版本 2.1"], ["用户协议与隐私政策", "2026-08-01 更新", "可在设置中随时查阅"], ["经营资质", "平台资质已公示", "正版授权信息随商品展示"]],
 };
+
+function renderAccountAddresses() {
+  accountSheetList.innerHTML = `
+    <div class="account-address-list" role="radiogroup" aria-label="选择收货地址">
+      ${deliveryAddresses.map((address) => {
+        const selected = address.id === pendingAccountAddressId;
+        const stateLabel = selected ? (address.id === activeAddressId ? "当前使用" : "已选择") : address.label;
+        return `<button class="account-address-card${selected ? " is-selected" : ""}" type="button" role="radio" aria-checked="${selected}" data-account-address="${address.id}">
+          <i class="account-address-check" aria-hidden="true">✓</i>
+          <span class="account-address-copy"><strong>${address.name}<em>${address.phone}</em></strong><small>${address.address}</small></span>
+          <b class="account-address-tag">${stateLabel}</b>
+        </button>`;
+      }).join("")}
+    </div>
+    <button class="account-address-confirm" type="button" data-confirm-account-address>使用该地址</button>
+    <p class="account-address-hint">确认后将同步到商品配送信息和结算订单。</p>`;
+}
 
 function openAccountView(view, filter = "", trigger = document.activeElement) {
   const titles = { orders: "我的订单", prizes: "我的赏品", records: "抽赏记录", coupons: "我的优惠券", "after-sale": "售后服务", address: "收货地址", support: "客服中心", invite: "邀请有礼", privacy: "隐私设置", about: "关于我们" };
   accountSheetTitle.textContent = filter || titles[view] || "个人中心";
+  accountSheet.classList.toggle("is-address-view", view === "address");
+  if (view === "address") {
+    pendingAccountAddressId = activeAddressId;
+    renderAccountAddresses();
+    openDialog(accountSheet, trigger);
+    return;
+  }
   let rows;
   if (view === "prizes") rows = [
     ...wonPrizes.map((prize) => [prize.name, "已入赏品柜", "1 件 · 可申请合并发货"]),
@@ -1332,6 +1390,22 @@ function openAccountView(view, filter = "", trigger = document.activeElement) {
   accountSheetList.innerHTML = rows.map((row) => `<article><strong>${row[0]}</strong><span>${row[1]}</span><small>${row[2]}</small></article>`).join("");
   openDialog(accountSheet, trigger);
 }
+
+accountSheetList.addEventListener("click", (event) => {
+  const addressButton = event.target.closest("[data-account-address]");
+  if (addressButton) {
+    pendingAccountAddressId = addressButton.dataset.accountAddress;
+    renderAccountAddresses();
+    accountSheetList.querySelector(`[data-account-address='${pendingAccountAddressId}']`)?.focus();
+    return;
+  }
+  if (event.target.closest("[data-confirm-account-address]")) {
+    useDeliveryAddress(pendingAccountAddressId, false);
+    const address = activeDeliveryAddress();
+    closeDialog();
+    showToast(`已使用${address.label}地址，配送信息已更新`);
+  }
+});
 
 function openDrawInfo(view, trigger) {
   const pack = currentDrawPack();

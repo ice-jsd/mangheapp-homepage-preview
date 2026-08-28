@@ -1741,6 +1741,35 @@ button:disabled {
 .account-sheet-list strong { font-size: 12px; }
 .account-sheet-list span { color: #b23c2c; font-size: 11px; font-weight: 700; }
 .account-sheet-list small { grid-column: 1 / -1; color: #5f667d; font-size: 11px; }
+.account-sheet.is-address-view h2 { margin-top: 0; }
+.account-address-list { display: flex; flex-direction: column; gap: 9px; }
+.account-address-card {
+  width: 100%;
+  min-height: 84px;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 13px;
+  border: 1px solid #ddd8e4;
+  border-radius: 16px;
+  color: var(--ink);
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.account-address-card.is-selected { border-color: #ff6a50; background: #fff6ed; box-shadow: 0 0 0 2px rgba(255,102,74,.1); }
+.account-address-check { width: 20px; height: 20px; display: grid; place-items: center; border: 1px solid #c7c1d1; border-radius: 50%; color: transparent; background: #fff; font-size: 11px; font-style: normal; }
+.account-address-card.is-selected .account-address-check { border-color: #cf432f; color: #fff; background: #cf432f; }
+.account-address-copy { min-width: 0; display: flex; flex-direction: column; gap: 7px; color: var(--ink) !important; }
+.account-address-copy strong { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; font-size: 12px; }
+.account-address-copy strong em { color: #5f667d; font-size: 10px; font-style: normal; font-weight: 500; }
+.account-address-copy small { color: #5f667d; font-size: 10px; line-height: 1.45; }
+.account-address-tag { padding: 5px 7px; border-radius: 999px; color: #6b6578; background: #f1edf7; font-size: 9px; white-space: nowrap; }
+.account-address-card.is-selected .account-address-tag { color: #a93425; background: #ffe4d7; }
+.account-address-confirm { width: 100%; min-height: 48px; margin-top: 3px; border: 0; border-radius: 15px; color: #fff; background: #cf432f; box-shadow: 0 6px 14px rgba(207,67,47,.18); font-size: 12px; font-weight: 800; cursor: pointer; }
+.account-address-hint { margin: 1px 4px 0; color: #696579; font-size: 9px; line-height: 1.45; text-align: center; }
 .pool-grid.is-single { grid-template-columns: minmax(0, 175px); justify-content: center; }
 
 /* Product detail, SKU selection and complete checkout */
