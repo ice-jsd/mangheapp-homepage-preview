@@ -87,9 +87,9 @@ let activeHomeIp = "全部IP";
 let activeHomeChannel = "推荐";
 
 const productProfiles = [
-  { stock: 86, sold: 286, material: "特种纸收藏卡、哑光覆膜", size: "约 88 × 63 mm", package: "独立密封包装", description: "炎柱主题随机收藏卡包，包含角色立绘与特别工艺卡面。" },
-  { stock: 42, sold: 184, material: "高透亚克力、烫金工艺", size: "约 70 × 100 mm", package: "防刮膜＋独立纸盒", description: "限定鎏金亚克力收藏砖，适合桌面陈列与角色收藏。" },
-  { stock: 64, sold: 521, material: "马口铁、覆膜印刷", size: "直径约 58 mm", package: "三枚套组独立卡装", description: "祢豆子软萌主题徽章套组，一套包含三款角色表情。" },
+  { stock: 86, sold: 286, material: "马口铁、闪粉覆膜", size: "直径约 75 mm", package: "独立卡装", description: "炎柱咖啡主题纪念徽章，采用亮面闪粉工艺，适合角色收藏与痛包搭配。" },
+  { stock: 42, sold: 184, material: "高透亚克力、彩印", size: "约 70 × 100 mm", package: "防刮膜＋独立纸盒", description: "香奈乎莓果主题亚克力立牌，以角色与饮品组合造型呈现，可直接桌面陈列。" },
+  { stock: 64, sold: 521, material: "高透亚克力、彩印", size: "高约 135 mm", package: "底座＋主体保护袋", description: "炎柱果饮主题亚克力立牌，包含角色主体与饮品背景，适合桌面展示。" },
   { stock: 120, sold: 238, material: "黑色高透亚克力", size: "高约 150 mm", package: "底座＋主体保护袋", description: "罗小黑黑金系列预售立牌，采用半透叠色与金属质感印刷。" },
   { stock: 126, sold: 97, material: "PET 胶片、局部光油", size: "约 90 × 55 mm", package: "独立防潮袋", description: "纸房子胶片风收藏卡，逆光可呈现通透画面层次。" },
   { stock: 72, sold: 166, material: "锌合金、烤漆", size: "主体约 45 mm", package: "独立吊卡包装", description: "夜行主题金属挂件，适合包袋装饰或角色收藏。" },
@@ -495,10 +495,17 @@ const checkoutCount = document.querySelector("#checkoutCount");
 const checkoutCoupon = document.querySelector("#checkoutCoupon");
 const checkoutAgreement = document.querySelector("#checkoutAgreement");
 const checkoutAddressOptions = document.querySelector("#checkoutAddressOptions");
+const checkoutAddressToggle = document.querySelector("[data-checkout-address-toggle]");
+const checkoutScrollArea = document.querySelector(".checkout-scroll-area");
 const checkoutPayButton = document.querySelector("[data-confirm-pay]");
 const checkoutButton = document.querySelector("[data-open-checkout]");
 const cartManageButton = document.querySelector("[data-cart-manage]");
 const cartPage = document.querySelector("#page-cart");
+const cartCheckout = document.querySelector(".cart-checkout");
+const cartEmptyState = document.querySelector("#cartEmptyState");
+const cartEmptyTitle = document.querySelector("#cartEmptyTitle");
+const cartEmptyCopy = document.querySelector("#cartEmptyCopy");
+const cartEmptyAction = document.querySelector("#cartEmptyAction");
 let cartManaging = false;
 const checkoutTitle = document.querySelector("#checkoutTitle");
 const selectAllButton = document.querySelector(".select-all");
@@ -733,7 +740,9 @@ function cartItems() {
 
 function updateCartBadge() {
   const quantity = cartItems().reduce((sum, item) => sum + Number(item.dataset.quantity), 0);
-  document.querySelector(".bottom-item.has-badge b").textContent = String(quantity);
+  const badge = document.querySelector(".bottom-item.has-badge b");
+  badge.textContent = String(quantity);
+  badge.hidden = quantity === 0;
 }
 
 function applyCartFilter() {
@@ -745,8 +754,22 @@ function applyCartFilter() {
 
 function updateCart() {
   const items = cartItems();
+  const cartIsEmpty = items.length === 0;
+  if (cartIsEmpty && cartManaging) {
+    cartManaging = false;
+    cartPage.classList.remove("is-managing");
+    cartManageButton.classList.remove("is-managing");
+    cartManageButton.textContent = "管理";
+  }
   applyCartFilter();
   const scopedItems = activeCartFilter === "全部" ? items : items.filter((item) => !item.hidden);
+  const filterIsEmpty = scopedItems.length === 0;
+  cartEmptyState.hidden = !filterIsEmpty;
+  cartEmptyTitle.textContent = cartIsEmpty ? "购物车还是空的" : `暂无${activeCartFilter}商品`;
+  cartEmptyCopy.textContent = cartIsEmpty ? "去逛逛，把喜欢的正版周边带回来" : "切换到全部分类查看购物车中的其他商品";
+  cartEmptyAction.textContent = cartIsEmpty ? "继续逛逛" : "查看全部商品";
+  cartCheckout.hidden = cartIsEmpty;
+  cartManageButton.disabled = cartIsEmpty;
   const selected = scopedItems.filter((item) => item.classList.contains("is-selected"));
   const selectedQuantity = selected.reduce((sum, item) => sum + Number(item.dataset.quantity), 0);
   const total = selected.reduce((sum, item) => sum + Number(item.dataset.price) * Number(item.dataset.quantity), 0);
@@ -769,6 +792,20 @@ function updateCart() {
   });
   updateCartBadge();
 }
+
+cartEmptyAction.addEventListener("click", () => {
+  if (cartItems().length === 0) {
+    navigate("home");
+    return;
+  }
+  activeCartFilter = "全部";
+  document.querySelectorAll("[data-cart-filter]").forEach((button) => {
+    const selected = button.dataset.cartFilter === "全部";
+    button.classList.toggle("is-active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  updateCart();
+});
 
 function addProductToCart(product, sku = product.options[0], quantity = 1) {
   const cartId = `${product.id}:${sku.id}`;
@@ -794,13 +831,17 @@ function addProductToCart(product, sku = product.options[0], quantity = 1) {
 }
 
 function checkoutItemFromCart(item) {
+  const description = item.querySelector("p")?.textContent || "以结算页为准";
+  const spec = item.dataset.spec || "标准款";
+  const shippingParts = description.split(" · ");
+  if (shippingParts[0] === spec || shippingParts[0] === item.dataset.state) shippingParts.shift();
   return {
     cartId: item.dataset.cartId,
     name: item.querySelector("h2")?.textContent || "商品",
     image: item.querySelector(":scope > img")?.src || "",
     state: item.dataset.state,
-    spec: item.dataset.spec || item.querySelector("p")?.textContent?.split(" · ")[0] || "标准款",
-    shipping: item.querySelector("p")?.textContent || "以结算页为准",
+    spec,
+    shipping: shippingParts.join(" · ") || description,
     price: Number(item.dataset.price),
     quantity: Number(item.dataset.quantity),
   };
@@ -830,7 +871,8 @@ function prepareCheckout(items, mode, trigger = document.activeElement) {
   checkoutPayButton.disabled = false;
   checkoutPayButton.classList.remove("is-paying");
   checkoutAddressOptions.hidden = true;
-  document.querySelector("[data-checkout-address-toggle]").setAttribute("aria-expanded", "false");
+  checkoutAddressToggle.setAttribute("aria-expanded", "false");
+  checkoutScrollArea.scrollTop = 0;
   updateCheckoutTotals();
   openDialog(checkoutSheet, trigger);
 }
@@ -916,7 +958,7 @@ checkoutCoupon.addEventListener("change", updateCheckoutTotals);
 checkoutAgreement.addEventListener("change", () => {
   checkoutPayButton.disabled = !checkoutAgreement.checked;
 });
-document.querySelector("[data-checkout-address-toggle]").addEventListener("click", (event) => {
+checkoutAddressToggle.addEventListener("click", (event) => {
   checkoutAddressOptions.hidden = !checkoutAddressOptions.hidden;
   event.currentTarget.setAttribute("aria-expanded", String(!checkoutAddressOptions.hidden));
 });
@@ -924,7 +966,12 @@ checkoutAddressOptions.addEventListener("change", (event) => {
   const usePudong = event.target.value === "浦东";
   document.querySelector("#checkoutAddressText").textContent = usePudong ? "上海市浦东新区张江路 66 号" : "上海市徐汇区漕溪北路 88 号 · 默认地址";
   checkoutAddressOptions.hidden = true;
-  document.querySelector("[data-checkout-address-toggle]").setAttribute("aria-expanded", "false");
+  checkoutAddressToggle.setAttribute("aria-expanded", "false");
+  window.requestAnimationFrame(() => {
+    checkoutScrollArea.scrollTo({ top: 0, behavior: "smooth" });
+    checkoutAddressToggle.focus({ preventScroll: true });
+    showToast(usePudong ? "已切换为浦东地址" : "已切换为默认地址");
+  });
 });
 
 checkoutPayButton.addEventListener("click", (event) => {
@@ -982,14 +1029,25 @@ cartManageButton.addEventListener("click", () => {
 /* Pool detail */
 const poolSheetTitle = document.querySelector("#poolSheetTitle");
 const poolSheetMeta = document.querySelector("#poolSheetMeta");
+const poolSheetPrice = document.querySelector("#poolSheetPrice");
+const poolActionPrice = document.querySelector("#poolActionPrice");
+const poolStockCopy = document.querySelector("#poolStockCopy");
+const poolStockProgress = document.querySelector("#poolStockProgress");
 const enterPoolButton = document.querySelector("[data-enter-pool]");
 let currentPool = null;
 
 function openPool(pool, trigger = pool) {
   currentPool = pool;
+  const remaining = Number(pool.dataset.remaining || 0);
+  const total = Math.max(remaining, pool.dataset.poolDestination === "draw" ? 64 : 96);
+  const price = pool.dataset.poolDestination === "draw" ? 20 : 39;
   poolSheetTitle.textContent = pool.dataset.pool;
-  poolSheetMeta.textContent = `剩余 ${pool.dataset.remaining} 份 · ${pool.dataset.popularity} 人参与 · ${pool.dataset.poolType}`;
-  enterPoolButton.textContent = pool.dataset.poolDestination === "draw" ? "进入对应抽卡机" : "选择抽取次数";
+  poolSheetMeta.textContent = `剩余 ${remaining} 份 · ${pool.dataset.popularity} 人参与 · ${pool.dataset.poolType}`;
+  poolSheetPrice.textContent = `¥${price}`;
+  poolActionPrice.textContent = `¥${price}`;
+  poolStockCopy.textContent = `${remaining} / ${total} 份`;
+  poolStockProgress.style.width = `${Math.max(6, Math.min(100, (remaining / total) * 100))}%`;
+  enterPoolButton.textContent = pool.dataset.poolDestination === "draw" ? "进入抽卡机" : "立即参与";
   openDialog(poolSheet, trigger);
 }
 
@@ -1017,8 +1075,18 @@ const drawConfirmTotal = document.querySelector("#drawConfirmTotal");
 const drawPayButton = document.querySelector("[data-confirm-draw]");
 const drawResultTitle = document.querySelector("#drawResultTitle");
 const drawResultMeta = document.querySelector("#drawResultMeta");
+const drawResultGrid = document.querySelector("#drawResultGrid");
 let pendingDraw = null;
 let newPrizeCount = 0;
+const wonPrizes = [];
+const drawPrizeCatalog = [
+  { name: "炼狱杏寿郎 · 果饮徽章", rarity: "A赏", image: "./assets/product-01.png" },
+  { name: "富冈义勇 · 果饮徽章", rarity: "B赏", image: "./assets/product-07.png" },
+  { name: "甘露寺蜜璃 · 亚克力立牌", rarity: "B赏", image: "./assets/product-08.png" },
+  { name: "灶门祢豆子 · 果饮徽章", rarity: "C赏", image: "./assets/product-04.png" },
+  { name: "伊黑小芭内 · 果饮徽章", rarity: "C赏", image: "./assets/product-06.png" },
+  { name: "炎柱 · 果饮亚克力立牌", rarity: "C赏", image: "./assets/product-03.png" },
+];
 
 function updateDrawPaymentButton() {
   if (!pendingDraw || drawPayButton.disabled) return;
@@ -1051,9 +1119,14 @@ drawPayButton.addEventListener("click", (event) => {
   button.classList.add("is-paying");
   button.textContent = `${paymentMethod}支付中…`;
   window.setTimeout(() => {
+    const drawOffset = newPrizeCount;
+    const prizes = Array.from({ length: draw.count }, (_, index) => drawPrizeCatalog[(drawOffset + index) % drawPrizeCatalog.length]);
     newPrizeCount += draw.count;
+    wonPrizes.unshift(...prizes);
     accountContent.records.unshift(["炎柱纪念卡包", draw.label, `刚刚 · 实付 ¥${formatMoney(draw.price)}`]);
-    drawResultTitle.textContent = draw.count > 1 ? `恭喜获得 ${draw.count} 件赏品！` : "恭喜抽中限定款！";
+    drawResultTitle.textContent = draw.count > 1 ? `恭喜获得 ${draw.count} 件赏品！` : "恭喜获得新赏品！";
+    drawResultGrid.classList.toggle("is-single", draw.count === 1);
+    drawResultGrid.innerHTML = prizes.map((prize) => `<article><img src="${prize.image}" alt="${prize.name}"><span>${prize.rarity}</span><strong>${prize.name}</strong></article>`).join("");
     drawResultMeta.textContent = `${draw.count} 件赏品已存入「我的赏品」 · 实付 ¥${formatMoney(draw.price)}`;
     button.classList.remove("is-paying");
     button.textContent = `${paymentMethod} ¥${formatMoney(draw.price)}`;
@@ -1067,7 +1140,7 @@ document.querySelector("[data-preview-card]").addEventListener("click", () => sh
 const accountSheetTitle = document.querySelector("#accountSheetTitle");
 const accountSheetList = document.querySelector("#accountSheetList");
 const accountContent = {
-  orders: [["炎柱纪念公仔", "待发货", "¥69"], ["柱集结限定摆件", "待收货", "¥129"], ["蜜璃亚克力立牌", "待付款", "¥39"]],
+  orders: [["炎柱果饮纪念徽章", "待发货", "¥29.9"], ["柱集结限定摆件", "待收货", "¥129"], ["蜜璃亚克力立牌", "待付款", "¥39"]],
   records: [["炎柱纪念卡包", "抽 1 包", "今日 18:24"], ["柱集合赏", "一番赏", "昨日 21:08"]],
   coupons: [["新人满减券", "满 99 减 15", "7 天后到期"], ["包邮券", "全场可用", "30 天后到期"]],
   "after-sale": [["售后服务", "暂无进行中的售后", "需要帮助请联系在线客服"]],
@@ -1082,7 +1155,11 @@ function openAccountView(view, filter = "", trigger = document.activeElement) {
   const titles = { orders: "我的订单", prizes: "我的赏品", records: "抽赏记录", coupons: "我的优惠券", "after-sale": "售后服务", address: "收货地址", support: "客服中心", invite: "邀请有礼", privacy: "隐私设置", about: "关于我们" };
   accountSheetTitle.textContent = filter || titles[view] || "个人中心";
   let rows;
-  if (view === "prizes") rows = [["炼狱杏寿郎 · 燃魂款", "已入赏品柜", `基础 1 件${newPrizeCount ? ` + 本次 ${newPrizeCount} 件` : ""}`], ["蜜璃亚克力立牌", "待收货", "1 件"]];
+  if (view === "prizes") rows = [
+    ...wonPrizes.map((prize) => [prize.name, "已入赏品柜", "1 件 · 可申请合并发货"]),
+    ["炼狱杏寿郎 · 果饮徽章", "已入赏品柜", "1 件 · 可申请发货"],
+    ["蜜璃亚克力立牌", "待收货", "1 件 · 查看物流"],
+  ];
   else rows = accountContent[view] || [["暂无内容", "稍后再来看看", "暂无更多数据"]];
   if (view === "orders" && filter) rows = rows.filter((row) => row[1] === filter);
   accountSheetList.innerHTML = rows.map((row) => `<article><strong>${row[0]}</strong><span>${row[1]}</span><small>${row[2]}</small></article>`).join("");

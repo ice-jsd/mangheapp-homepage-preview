@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-labelledby="title desc">
+  <title id="title">盗墓笔记夜行挂件占位商品图</title><desc id="desc">谷多多原创的夜行金属挂件示意图，不含竞品标识</desc>
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ddf5ed"/><stop offset="1" stop-color="#dce5ff"/></linearGradient><linearGradient id="tag" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#247d79"/><stop offset="1" stop-color="#171f4d"/></linearGradient></defs>
+  <rect width="600" height="600" rx="64" fill="url(#bg)"/><path d="M300 66c-57 0-103 46-103 103 0 39 22 74 54 91" fill="none" stroke="#171f4d" stroke-linecap="round" stroke-width="18"/><circle cx="301" cy="68" r="24" fill="#f2b22e" stroke="#171f4d" stroke-width="10"/>
+  <path d="m180 225 120-79 120 79v194c0 22-18 40-40 40H220c-22 0-40-18-40-40Z" fill="url(#tag)" stroke="#f2b22e" stroke-width="9"/><circle cx="300" cy="231" r="24" fill="#fff4d8"/><path d="m239 341 61-81 61 81-61 63Z" fill="#fff" opacity=".92"/><path d="M268 341h64l-32 42Z" fill="#ff664a"/>
+  <rect x="137" y="471" width="326" height="60" rx="30" fill="#171f4d"/><text x="300" y="510" fill="#fff" font-family="Noto Sans SC, sans-serif" font-size="25" font-weight="700" text-anchor="middle">盗墓笔记 · 夜行挂件</text>
+</svg>
