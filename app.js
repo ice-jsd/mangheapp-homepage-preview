@@ -16,7 +16,7 @@ function showToast(message) {
 }
 
 function closeTransientUi() {
-  if (activeDialog) closeDialog({ restoreFocus: false });
+  if (activeDialog) closeDialog({ restoreFocus: false, force: true, updateHistory: false });
   if (poolDetailOpen) closePoolDetail({ restoreFocus: false, updateHistory: false });
   if (productDetailOpen) {
     productReturnSearch = "";
@@ -43,15 +43,32 @@ function activatePage(page, options = {}) {
 
 function navigate(page, options = {}) {
   if (!pageNames[page]) return;
-  if (currentPage === page) {
-    activatePage(page, { reset: options.reset !== false });
+  if (typeof drawPaymentPending !== "undefined" && drawPaymentPending) {
+    showToast("支付处理中，请稍候");
     return;
   }
-  window.location.hash = page;
+  const destination = page === "draw" ? `draw/${typeof activeDrawPackId !== "undefined" ? activeDrawPackId : "flame-pack"}` : page;
+  if (currentPage === page) {
+    const currentRoute = window.location.hash.slice(1);
+    if (currentRoute === destination) activatePage(page, { reset: options.reset !== false });
+    else window.location.hash = destination;
+    return;
+  }
+  window.location.hash = destination;
+}
+
+function parseAppRoute() {
+  const [page = "home", id = ""] = window.location.hash.slice(1).split("/");
+  if (page === "pool" && id && poolById?.has(id)) return { page: "pool", poolId: id };
+  if (page === "draw") return { page: "draw", packId: drawPackById?.has(id) ? id : "flame-pack" };
+  return { page: pageNames[page] ? page : "home" };
 }
 
 function routeFromHash(options = {}) {
-  activatePage(window.location.hash.slice(1) || "home", options);
+  const route = parseAppRoute();
+  activatePage(route.page, options);
+  if (route.poolId) openPool(route.poolId, null, { fromRoute: true });
+  if (route.packId) renderDrawPack(route.packId, { updateRoute: false });
 }
 
 function scrollToTarget(id) {
@@ -275,36 +292,276 @@ document.querySelector("[data-shuffle-products]")?.addEventListener("click", () 
 });
 
 /* Pool filters and detail */
-const poolGrid = document.querySelector(".pool-grid");
-const poolCards = [...document.querySelectorAll(".pool-grid [data-pool]")];
+function createPoolBoxes(remainingTotals, prizeTotals) {
+  const total = prizeTotals.reduce((sum, value) => sum + value, 0);
+  return remainingTotals.map((remaining, index) => {
+    const raw = prizeTotals.map((tierTotal) => (remaining * tierTotal) / total);
+    const counts = raw.map((value) => Math.floor(value));
+    let unassigned = remaining - counts.reduce((sum, value) => sum + value, 0);
+    raw
+      .map((value, tierIndex) => ({ tierIndex, fraction: value - Math.floor(value) }))
+      .sort((a, b) => b.fraction - a.fraction)
+      .forEach(({ tierIndex }) => {
+        if (unassigned > 0 && counts[tierIndex] < prizeTotals[tierIndex]) {
+          counts[tierIndex] += 1;
+          unassigned -= 1;
+        }
+      });
+    return { number: index + 1, remaining, total, counts, lastRemaining: remaining > 0 ? 1 : 0 };
+  });
+}
+
+const poolOfferConfiguration = [
+  { id: "one", label: "1抽", count: 1, discount: 0, badge: "轻松试手" },
+  { id: "three", label: "3抽", count: 3, discount: 3, badge: "立减 ¥3" },
+  { id: "five", label: "5抽", count: 5, discount: 8, badge: "立减 ¥8" },
+  { id: "all", label: "全收", count: "remaining", discountRate: 0.08, badge: "当前箱 92 折" },
+];
+
+const poolCatalog = [
+  {
+    id: "pillar-collection", title: "鬼灭之刃 · 柱集合赏", ip: "鬼灭之刃", type: "一番赏", image: "./assets/quick-pool.png",
+    price: 39, popularity: 286, badge: "本周热池", currentBox: 3, linkedPackId: "flame-pack", probabilityUpdated: "今天 18:30",
+    offers: poolOfferConfiguration,
+    prizes: [
+      { tier: "A赏", name: "柱集合限定亚克力摆件", image: "./assets/product-03.png", total: 2 },
+      { tier: "B赏", name: "角色果饮徽章套组", image: "./assets/product-01.png", total: 18 },
+      { tier: "C赏", name: "鎹鸦主题立牌", image: "./assets/product-08.png", total: 30 },
+      { tier: "D赏", name: "柱集合收藏卡", image: "./assets/product-04.png", total: 46 },
+    ],
+    lastPrize: { tier: "LAST赏", name: "炎柱特别色大立牌", image: "./assets/hero-rengoku.png", total: 1 },
+    boxes: createPoolBoxes([96, 75, 42, 18, 96, 81], [2, 18, 30, 46]),
+  },
+  {
+    id: "galaxy-journey", title: "盗墓笔记 · 星河旅程", ip: "盗墓笔记", type: "一番赏", image: "./assets/product-daomu.svg",
+    price: 45, popularity: 198, badge: "即将结束", currentBox: 4, linkedPackId: "galaxy-pack", probabilityUpdated: "今天 18:26",
+    offers: poolOfferConfiguration,
+    prizes: [
+      { tier: "A赏", name: "星河旅程场景摆件", image: "./assets/product-daomu.svg", total: 2 },
+      { tier: "B赏", name: "主角团收藏立牌", image: "./assets/product-06.png", total: 14 },
+      { tier: "C赏", name: "旅程徽章", image: "./assets/product-07.png", total: 24 },
+      { tier: "D赏", name: "星轨收藏卡", image: "./assets/product-daomu.svg", total: 40 },
+    ],
+    lastPrize: { tier: "LAST赏", name: "终点站限定灯牌", image: "./assets/product-daomu.svg", total: 1 },
+    boxes: createPoolBoxes([80, 59, 34, 12], [2, 14, 24, 40]),
+  },
+  {
+    id: "film-archive", title: "纸房子 · 胶片收藏赏", ip: "纸房子", type: "主题赏", image: "./assets/product-paperhouse.svg",
+    price: 29, popularity: 92, badge: "主题新赏", currentBox: 2, linkedPackId: "film-pack", probabilityUpdated: "今天 18:21",
+    offers: poolOfferConfiguration,
+    prizes: [
+      { tier: "A赏", name: "红衣人胶片灯箱", image: "./assets/product-paperhouse.svg", total: 2 },
+      { tier: "B赏", name: "角色胶片立牌", image: "./assets/product-05.png", total: 16 },
+      { tier: "C赏", name: "城市计划徽章", image: "./assets/product-02.png", total: 28 },
+      { tier: "D赏", name: "经典台词票根卡", image: "./assets/product-paperhouse.svg", total: 44 },
+    ],
+    lastPrize: { tier: "LAST赏", name: "教授计划书收藏框", image: "./assets/product-paperhouse.svg", total: 1 },
+    boxes: createPoolBoxes([90, 66, 33, 9, 90], [2, 16, 28, 44]),
+  },
+  {
+    id: "healing-forest", title: "罗小黑 · 治愈森林赏", ip: "罗小黑战记", type: "主题赏", image: "./assets/product-luoxiaohei.svg",
+    price: 35, popularity: 121, badge: "余量紧张", currentBox: 3, linkedPackId: "healing-pack", probabilityUpdated: "今天 18:18",
+    offers: poolOfferConfiguration,
+    prizes: [
+      { tier: "A赏", name: "治愈森林旋转摆件", image: "./assets/product-luoxiaohei.svg", total: 2 },
+      { tier: "B赏", name: "无限与小黑立牌", image: "./assets/product-08.png", total: 12 },
+      { tier: "C赏", name: "妖灵会馆徽章", image: "./assets/product-06.png", total: 22 },
+      { tier: "D赏", name: "森林日常收藏卡", image: "./assets/product-luoxiaohei.svg", total: 36 },
+    ],
+    lastPrize: { tier: "LAST赏", name: "小黑入梦夜灯", image: "./assets/product-luoxiaohei.svg", total: 1 },
+    boxes: createPoolBoxes([72, 48, 18, 72], [2, 12, 22, 36]),
+  },
+];
+
+const drawPackCatalog = [
+  {
+    id: "flame-pack", name: "炎柱纪念卡包", ip: "鬼灭之刃", image: "./assets/draw-pack.png", batchRemaining: 48, batchTotal: 72, updatedAt: "18:30", unitPrice: 20,
+    offers: [{ id: "one", label: "1包", count: 1, price: 20, badge: "轻松试手" }, { id: "three", label: "3包", count: 3, price: 58, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 116, badge: "省 ¥4" }],
+    catalog: [
+      { name: "炼狱杏寿郎 · 果饮徽章", rarity: "稀有", image: "./assets/product-01.png", weight: 8 },
+      { name: "富冈义勇 · 果饮徽章", rarity: "闪卡", image: "./assets/product-07.png", weight: 14 },
+      { name: "甘露寺蜜璃 · 亚克力立牌", rarity: "闪卡", image: "./assets/product-08.png", weight: 18 },
+      { name: "灶门祢豆子 · 果饮徽章", rarity: "常规", image: "./assets/product-04.png", weight: 20 },
+      { name: "伊黑小芭内 · 果饮徽章", rarity: "常规", image: "./assets/product-06.png", weight: 20 },
+      { name: "炎柱 · 果饮亚克力立牌", rarity: "常规", image: "./assets/product-03.png", weight: 20 },
+    ],
+  },
+  {
+    id: "film-pack", name: "胶片收藏卡包", ip: "纸房子", image: "./assets/product-paperhouse.svg", batchRemaining: 35, batchTotal: 60, updatedAt: "18:26", unitPrice: 18,
+    offers: [{ id: "one", label: "1包", count: 1, price: 18, badge: "单包体验" }, { id: "three", label: "3包", count: 3, price: 52, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 102, badge: "省 ¥6" }],
+    catalog: [
+      { name: "教授 · 金边胶片卡", rarity: "稀有", image: "./assets/product-paperhouse.svg", weight: 10 },
+      { name: "东京 · 角色胶片卡", rarity: "闪卡", image: "./assets/product-05.png", weight: 20 },
+      { name: "红衣人 · 行动胶片卡", rarity: "常规", image: "./assets/product-02.png", weight: 35 },
+      { name: "城市计划 · 票根卡", rarity: "常规", image: "./assets/product-paperhouse.svg", weight: 35 },
+    ],
+  },
+  {
+    id: "galaxy-pack", name: "星河旅程卡包", ip: "盗墓笔记", image: "./assets/product-daomu.svg", batchRemaining: 18, batchTotal: 48, updatedAt: "18:21", unitPrice: 22,
+    offers: [{ id: "one", label: "1包", count: 1, price: 22, badge: "单包体验" }, { id: "three", label: "3包", count: 3, price: 64, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 126, badge: "省 ¥6" }],
+    catalog: [
+      { name: "星河终点 · 镭射卡", rarity: "稀有", image: "./assets/product-daomu.svg", weight: 8 },
+      { name: "主角团 · 夜光卡", rarity: "闪卡", image: "./assets/product-06.png", weight: 22 },
+      { name: "旅程札记 · 收藏卡", rarity: "常规", image: "./assets/product-07.png", weight: 35 },
+      { name: "星轨地图 · 收藏卡", rarity: "常规", image: "./assets/product-daomu.svg", weight: 35 },
+    ],
+  },
+  {
+    id: "healing-pack", name: "治愈森林卡包", ip: "罗小黑战记", image: "./assets/product-luoxiaohei.svg", batchRemaining: 54, batchTotal: 72, updatedAt: "18:18", unitPrice: 19,
+    offers: [{ id: "one", label: "1包", count: 1, price: 19, badge: "单包体验" }, { id: "three", label: "3包", count: 3, price: 55, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 108, badge: "省 ¥6" }],
+    catalog: [
+      { name: "小黑 · 月夜闪卡", rarity: "稀有", image: "./assets/product-luoxiaohei.svg", weight: 10 },
+      { name: "无限 · 旅途卡", rarity: "闪卡", image: "./assets/product-08.png", weight: 20 },
+      { name: "妖灵会馆 · 合影卡", rarity: "常规", image: "./assets/product-06.png", weight: 35 },
+      { name: "森林日常 · 收藏卡", rarity: "常规", image: "./assets/product-luoxiaohei.svg", weight: 35 },
+    ],
+  },
+];
+
+const demoTransactionStorageKey = "gdd-pool-draw-state-v2";
+
+function loadDemoTransactionState() {
+  try {
+    const value = JSON.parse(window.localStorage.getItem(demoTransactionStorageKey) || "null");
+    return value && typeof value === "object" ? value : {};
+  } catch {
+    return {};
+  }
+}
+
+let demoTransactionState = loadDemoTransactionState();
+
+function applyPersistedInventory(state = demoTransactionState, { poolId = "", packId = "" } = {}) {
+  poolCatalog.forEach((pool) => {
+    if (poolId && pool.id !== poolId) return;
+    const storedPool = state.pools?.[pool.id];
+    if (!storedPool) return;
+    if (storedPool.probabilityUpdated) pool.probabilityUpdated = storedPool.probabilityUpdated;
+    pool.boxes.forEach((box) => {
+      const storedBox = storedPool.boxes?.[box.number];
+      if (!storedBox || !Array.isArray(storedBox.counts) || storedBox.counts.length !== box.counts.length) return;
+      const counts = storedBox.counts.map((value, index) => Math.max(0, Math.min(pool.prizes[index].total, Number(value) || 0)));
+      box.counts = counts;
+      box.remaining = counts.reduce((sum, value) => sum + value, 0);
+      box.lastRemaining = box.remaining > 0 && storedBox.lastRemaining !== 0 ? 1 : 0;
+    });
+  });
+  drawPackCatalog.forEach((pack) => {
+    if (packId && pack.id !== packId) return;
+    const storedPack = state.packs?.[pack.id];
+    if (!storedPack) return;
+    pack.batchRemaining = Math.max(0, Math.min(pack.batchTotal, Number(storedPack.remaining) || 0));
+    if (storedPack.updatedAt) pack.updatedAt = storedPack.updatedAt;
+  });
+}
+
+function syncPersistedInventory({ poolId = "", packId = "" } = {}) {
+  const fresh = loadDemoTransactionState();
+  if (fresh.pools || fresh.packs) {
+    demoTransactionState = fresh;
+    applyPersistedInventory(fresh, { poolId, packId });
+  }
+}
+
+function currentClockTime() {
+  return new Intl.DateTimeFormat("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date());
+}
+
+function persistDemoTransactionState() {
+  const state = {
+    version: 2,
+    pools: Object.fromEntries(poolCatalog.map((pool) => [pool.id, {
+      probabilityUpdated: pool.probabilityUpdated,
+      boxes: Object.fromEntries(pool.boxes.map((box) => [box.number, { counts: [...box.counts], lastRemaining: box.lastRemaining }])),
+    }])),
+    packs: Object.fromEntries(drawPackCatalog.map((pack) => [pack.id, { remaining: pack.batchRemaining, updatedAt: pack.updatedAt }])),
+    wonPrizes: wonPrizes.slice(0, 120).map(({ name, rarity, image, tier }) => ({ name, rarity, image, tier })),
+    records: accountContent.records.slice(0, 120),
+  };
+  demoTransactionState = state;
+  try {
+    window.localStorage.setItem(demoTransactionStorageKey, JSON.stringify(state));
+  } catch {
+    showToast("本次结果已保留在当前页面，请勿立即关闭");
+  }
+}
+
+applyPersistedInventory();
+
+const poolById = new Map(poolCatalog.map((pool) => [pool.id, pool]));
+const drawPackById = new Map(drawPackCatalog.map((pack) => [pack.id, pack]));
+const selectedPoolBoxes = new Map(poolCatalog.map((pool) => [pool.id, pool.currentBox]));
+const poolGrid = document.querySelector("#poolGrid");
+const poolFeature = document.querySelector("#poolFeature");
 const poolEmpty = document.querySelector("#poolEmpty");
 const hotPoolTitle = document.querySelector("#hotPoolTitle");
 let activePoolType = "综合";
 let activePoolIp = "全部";
 let activePoolSort = "最新";
-poolCards.forEach((card, index) => (card.dataset.order = String(index)));
+
+function selectedPoolBox(pool) {
+  return pool.boxes[(selectedPoolBoxes.get(pool.id) || pool.currentBox) - 1];
+}
+
+function poolOfferQuote(pool, offerId, box = selectedPoolBox(pool)) {
+  const configuration = pool.offers.find((offer) => offer.id === offerId) || pool.offers[0];
+  const count = configuration.count === "remaining" ? box.remaining : configuration.count;
+  const subtotal = count * pool.price;
+  const discount = configuration.discountRate
+    ? Math.round(subtotal * configuration.discountRate)
+    : Math.min(subtotal, configuration.discount || 0);
+  return {
+    ...configuration,
+    count,
+    subtotal,
+    discount,
+    price: Math.max(0, subtotal - discount),
+    available: count > 0 && count <= box.remaining,
+  };
+}
+
+function poolMatchesFilters(pool) {
+  const box = selectedPoolBox(pool);
+  const typeMatch = activePoolType === "综合" || pool.type === activePoolType || (activePoolType === "即将结束" && box.remaining <= 20);
+  return typeMatch && (activePoolIp === "全部" || pool.ip === activePoolIp);
+}
+
+function renderPoolFeature(pool) {
+  const box = selectedPoolBox(pool);
+  const grandRemaining = (box.counts[0] || 0) + box.lastRemaining;
+  poolFeature.dataset.poolId = pool.id;
+  document.querySelector("#poolFeatureBadge").textContent = pool.badge;
+  document.querySelector("#poolFeatureTitle").textContent = pool.title;
+  document.querySelector("#poolFeatureMeta").textContent = `¥${pool.price}/抽 · 大奖尚余 ${grandRemaining} 件 · ${box.lastRemaining ? `距 LAST ${box.remaining} 抽` : "LAST 已出"}`;
+  const image = document.querySelector("#poolFeatureImage");
+  image.src = pool.prizes[0].image;
+  image.alt = `${pool.title}${pool.prizes[0].name}`;
+}
+
+function renderPoolCard(pool) {
+  const box = selectedPoolBox(pool);
+  const progress = Math.round((box.remaining / box.total) * 100);
+  const grandRemaining = (box.counts[0] || 0) + box.lastRemaining;
+  return `<button class="pool-card" type="button" data-pool-id="${pool.id}" aria-label="查看${pool.title}第${box.number}箱">
+    <span class="pool-card-media"><img class="pool-card-a-prize" src="${pool.prizes[0].image}" alt="" /><img class="pool-card-last-prize" src="${pool.lastPrize.image}" alt="" /><b>${pool.type}</b><em>${box.lastRemaining ? "LAST 未出" : "LAST 已出"}</em></span>
+    <span class="pool-card-copy"><strong>${pool.title}</strong><span><b>¥${pool.price}<small>/抽</small></b><small>第 ${box.number}/${pool.boxes.length} 箱</small></span><span class="pool-card-value">大奖尚余 ${grandRemaining} 件 · ${box.lastRemaining ? `距 LAST ${box.remaining} 抽` : "LAST 已出"}</span><span class="pool-card-stock">剩余 ${box.remaining}/${box.total}</span></span>
+    <span class="pool-card-progress" role="progressbar" aria-label="${pool.title}剩余" aria-valuemin="0" aria-valuemax="${box.total}" aria-valuenow="${box.remaining}"><i style="width:${progress}%"></i></span>
+  </button>`;
+}
 
 function applyPoolFilters({ announce = true } = {}) {
-  const sorted = [...poolCards].sort((a, b) => {
-    if (activePoolSort === "人气") return Number(b.dataset.popularity) - Number(a.dataset.popularity);
-    if (activePoolSort === "将结束") return Number(a.dataset.remaining) - Number(b.dataset.remaining);
-    return Number(a.dataset.order) - Number(b.dataset.order);
+  const visible = poolCatalog.filter(poolMatchesFilters).sort((a, b) => {
+    if (activePoolSort === "人气") return b.popularity - a.popularity;
+    if (activePoolSort === "将结束") return selectedPoolBox(a).remaining - selectedPoolBox(b).remaining;
+    return poolCatalog.indexOf(a) - poolCatalog.indexOf(b);
   });
-  sorted.forEach((card) => poolGrid.append(card));
-  let visibleCount = 0;
-  sorted.forEach((card) => {
-    const typeMatch =
-      activePoolType === "综合" ||
-      card.dataset.poolType === activePoolType ||
-      (activePoolType === "即将结束" && Number(card.dataset.remaining) <= 20);
-    const ipMatch = activePoolIp === "全部" || card.dataset.poolIp === activePoolIp;
-    card.hidden = !(typeMatch && ipMatch);
-    if (!card.hidden) visibleCount += 1;
-  });
-  hotPoolTitle.textContent = `正在热抽（${visibleCount}）`;
-  poolEmpty.hidden = visibleCount !== 0;
-  poolGrid.classList.toggle("is-single", visibleCount === 1);
-  if (announce) showToast(`已更新 ${visibleCount} 个赏池`);
+  poolFeature.hidden = visible.length === 0;
+  if (visible[0]) renderPoolFeature(visible[0]);
+  poolGrid.innerHTML = visible.map(renderPoolCard).join("");
+  hotPoolTitle.textContent = `当前可抽（${visible.length}）`;
+  poolEmpty.hidden = visible.length !== 0;
+  poolGrid.classList.toggle("is-single", visible.length === 1);
+  if (announce) showToast(`已更新 ${visible.length} 个赏池`);
 }
 
 document.querySelectorAll(".segmented-tabs [data-pool-type]").forEach((button) => {
@@ -368,6 +625,14 @@ let activeDialog = null;
 let lastDialogTrigger = null;
 let poolDetailOpen = false;
 let productDetailOpen = false;
+let drawPaymentPending = false;
+let drawOpeningActive = false;
+let drawTransactionToken = 0;
+let drawPaymentTimer = null;
+let drawOpeningTimer = null;
+let drawOpeningStageTimers = [];
+let drawConfirmHistoryOpen = false;
+let completedDrawAfterHistory = null;
 
 function focusableWithin(element) {
   return [...element.querySelectorAll('button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')].filter(
@@ -375,11 +640,18 @@ function focusableWithin(element) {
   );
 }
 
+function setLayerInert(element, value) {
+  if (value && element.contains(document.activeElement) && document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  element.inert = value;
+  if (value) element.setAttribute("aria-hidden", "true");
+  else element.removeAttribute("aria-hidden");
+}
+
 function setAppBackgroundInert(value) {
-  scrollView.inert = value || poolDetailOpen || productDetailOpen;
-  bottomNav.inert = value || poolDetailOpen || productDetailOpen;
-  poolDetailView.inert = value || productDetailOpen;
-  productDetailView.inert = value || poolDetailOpen;
+  setLayerInert(scrollView, value || poolDetailOpen || productDetailOpen);
+  setLayerInert(bottomNav, value || poolDetailOpen || productDetailOpen);
+  setLayerInert(poolDetailView, value || productDetailOpen);
+  setLayerInert(productDetailView, value || poolDetailOpen);
 }
 
 function openDialog(dialog, trigger = document.activeElement) {
@@ -391,6 +663,7 @@ function openDialog(dialog, trigger = document.activeElement) {
   lastDialogTrigger = triggerIsInsidePrevious && previousTrigger ? previousTrigger : trigger instanceof HTMLElement ? trigger : null;
   dialog.hidden = false;
   dialog.setAttribute("aria-hidden", "false");
+  focusableWithin(dialog)[0]?.focus({ preventScroll: true });
   setAppBackgroundInert(true);
   if (dialog !== searchOverlay) {
     sheetBackdrop.classList.add("is-open");
@@ -402,8 +675,17 @@ function openDialog(dialog, trigger = document.activeElement) {
   });
 }
 
-function closeDialog({ restoreFocus = true } = {}) {
+function closeDialog({ restoreFocus = true, force = false, updateHistory = true } = {}) {
   if (!activeDialog) return;
+  if (activeDialog === drawConfirmSheet && drawConfirmHistoryOpen && updateHistory) {
+    cancelDrawTransaction({ clearOrder: true });
+    window.history.back();
+    return true;
+  }
+  if (!force && activeDialog === drawResult && drawOpeningActive) {
+    showToast("正在揭晓，可点击跳过动画");
+    return false;
+  }
   const closing = activeDialog;
   const focusTarget = restoreFocus && lastDialogTrigger?.isConnected ? lastDialogTrigger : null;
   activeDialog = null;
@@ -416,6 +698,11 @@ function closeDialog({ restoreFocus = true } = {}) {
   closing.setAttribute("aria-hidden", "true");
   closing.hidden = true;
   lastDialogTrigger = null;
+  if (closing === drawConfirmSheet) {
+    drawConfirmHistoryOpen = false;
+    cancelDrawTransaction({ clearOrder: true });
+  }
+  return true;
 }
 
 document.querySelectorAll("[data-close-overlay], [data-close-sheet], [data-close-result]").forEach((button) =>
@@ -452,8 +739,7 @@ function runSearch(query) {
   const needle = normalize(query);
   if (!needle) return showToast("请输入 IP、角色或商品");
   const productMatches = productCatalog.filter((item) => normalize(`${item.name}${item.ip}${item.kind}${item.state}${item.shipping}`).includes(needle));
-  const allPools = [...document.querySelectorAll("[data-pool]")];
-  const poolMatches = allPools.filter((item) => normalize(`${item.dataset.pool}${item.dataset.poolIp}${item.dataset.poolType}`).includes(needle));
+  const poolMatches = poolCatalog.filter((item) => normalize(`${item.title}${item.ip}${item.type}`).includes(needle));
   document.querySelectorAll(".search-default-block").forEach((block) => (block.hidden = true));
   searchResults.hidden = false;
   searchResultTitle.textContent = `“${query}” · ${productMatches.length + poolMatches.length} 个结果`;
@@ -468,9 +754,8 @@ function runSearch(query) {
   poolMatches.forEach((item) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.dataset.searchPool = String(allPools.indexOf(item));
-    const image = item.querySelector("img")?.src || "";
-    button.innerHTML = `<img src="${image}" alt=""><span><strong>${item.dataset.pool}</strong><small>${item.dataset.poolIp} · ${item.dataset.poolType}</small></span><b>赏池</b>`;
+    button.dataset.searchPool = item.id;
+    button.innerHTML = `<img src="${item.image}" alt=""><span><strong>${item.title}</strong><small>${item.ip} · ${item.type}</small></span><b>赏池</b>`;
     searchResultList.append(button);
   });
   searchEmpty.hidden = productMatches.length + poolMatches.length !== 0;
@@ -511,10 +796,9 @@ searchResultList.addEventListener("click", (event) => {
     closeDialog({ restoreFocus: false });
     if (product) openProductDetail(product, button, { returnToSearch: query });
   } else if (button.dataset.searchPool) {
-    const pool = [...document.querySelectorAll("[data-pool]")][Number(button.dataset.searchPool)];
+    const pool = poolById.get(button.dataset.searchPool);
     closeDialog({ restoreFocus: false });
-    navigate("pool");
-    window.setTimeout(() => openPool(pool, pool), 100);
+    if (pool) openPool(pool.id, button);
   }
 });
 
@@ -754,6 +1038,7 @@ function openProductDetail(product, trigger = product.card, options = {}) {
   renderProductDetail(product);
   productDetailOpen = true;
   productDetailView.hidden = false;
+  productDetailView.querySelector("[data-close-product-detail]")?.focus({ preventScroll: true });
   setAppBackgroundInert(false);
   productDetailScroll.scrollTop = 0;
   window.requestAnimationFrame(() => {
@@ -1189,66 +1474,100 @@ const poolDetailImage = document.querySelector("#poolDetailImage");
 const poolDetailPrice = document.querySelector("#poolDetailPrice");
 const poolRareRate = document.querySelector("#poolRareRate");
 const poolActionPrice = document.querySelector("#poolActionPrice");
+const poolActionLabel = document.querySelector("#poolActionLabel");
+const poolActionSaving = document.querySelector("#poolActionSaving");
+const poolOfferList = document.querySelector("#poolOfferList");
 const poolStockCopy = document.querySelector("#poolStockCopy");
 const poolStockProgress = document.querySelector("#poolStockProgress");
-const poolPrizeRows = [...document.querySelectorAll("[data-pool-prize]")];
+const poolGrandPrizes = document.querySelector("#poolGrandPrizes");
+const poolTierGrid = document.querySelector("#poolTierGrid");
 const enterPoolButton = document.querySelector("[data-enter-pool]");
 let currentPool = null;
 let lastPoolTrigger = null;
+let activePrizeView = "all";
+let activePoolOfferId = "one";
+
+function updatePoolOfferSummary(pool, box) {
+  const quote = poolOfferQuote(pool, activePoolOfferId, box);
+  poolActionLabel.textContent = quote.id === "all" ? `全收 ${quote.count} 抽` : quote.label;
+  poolActionPrice.textContent = `¥${formatMoney(quote.price)}`;
+  poolActionSaving.textContent = quote.discount > 0 ? `已优惠 ¥${formatMoney(quote.discount)}` : "每抽必得";
+  enterPoolButton.disabled = !quote.available;
+  enterPoolButton.textContent = quote.available ? `参与 ${quote.count} 抽` : "库存不足";
+}
+
+function renderPoolOfferSelection(pool, box) {
+  let quote = poolOfferQuote(pool, activePoolOfferId, box);
+  if (!quote.available) {
+    const fallback = pool.offers.map((offer) => poolOfferQuote(pool, offer.id, box)).find((offer) => offer.available);
+    activePoolOfferId = fallback?.id || "one";
+    quote = poolOfferQuote(pool, activePoolOfferId, box);
+  }
+  poolOfferList.innerHTML = pool.offers.map((offer) => {
+    const option = poolOfferQuote(pool, offer.id, box);
+    const selected = option.id === activePoolOfferId;
+    const countCopy = option.id === "all" ? `${option.count}抽` : option.label;
+    return `<label class="${selected ? "is-selected" : ""}${option.available ? "" : " is-disabled"}"><input type="radio" name="poolOffer" value="${option.id}" ${selected ? "checked" : ""} ${option.available ? "" : "disabled"}><span><small>${option.id === "all" ? `余 ${box.remaining}` : option.badge}</small><strong>${countCopy}</strong><b>¥${formatMoney(option.price)}</b></span></label>`;
+  }).join("");
+  updatePoolOfferSummary(pool, box);
+}
 
 function renderPoolDetail(pool) {
   currentPool = pool;
-  const remaining = Number(pool.dataset.remaining || 0);
-  const total = Math.max(remaining, pool.dataset.poolDestination === "draw" ? 64 : 96);
-  const price = pool.dataset.poolDestination === "draw" ? 20 : 39;
-  const image = pool.querySelector("img")?.getAttribute("src") || "./assets/quick-pool.png";
-  const catalog = poolPrizeCatalog[pool.dataset.poolIp] || poolPrizeCatalog.default;
-  const probabilities = [8, 22, 70];
-  const topPrizeCount = Math.min(remaining, Math.max(1, Math.round(remaining * .08)));
-  const middlePrizeCount = Math.min(remaining - topPrizeCount, Math.max(0, Math.round(remaining * .22)));
-  const prizeCounts = [topPrizeCount, middlePrizeCount, Math.max(0, remaining - topPrizeCount - middlePrizeCount)];
-  poolDetailTitle.textContent = pool.dataset.pool;
-  poolDetailMeta.textContent = `剩余 ${remaining} 份 · ${pool.dataset.popularity} 人参与`;
-  poolDetailType.textContent = pool.dataset.poolType;
-  poolDetailIp.textContent = `${pool.dataset.poolIp} · 官方授权`;
-  poolDetailImage.src = image;
-  poolDetailImage.alt = `${pool.dataset.pool}赏品预览`;
-  poolDetailPrice.textContent = `¥${price}`;
-  poolRareRate.textContent = `${probabilities[0]}%`;
-  poolActionPrice.textContent = `¥${price}`;
-  poolStockCopy.textContent = `${remaining} / ${total} 份`;
-  poolStockProgress.style.width = `${Math.max(6, Math.min(100, (remaining / total) * 100))}%`;
-  poolPrizeRows.forEach((row, index) => {
-    const prize = catalog[index % catalog.length];
-    row.querySelector("img").src = prize.image;
-    row.querySelector("img").alt = prize.name;
-    row.querySelector("strong").textContent = prize.name;
-    row.querySelector("small").textContent = `剩余 ${prizeCounts[index]} 件`;
-    row.querySelector("em").textContent = `${probabilities[index]}%`;
-  });
-  enterPoolButton.textContent = pool.dataset.poolDestination === "draw" ? "进入抽卡机" : "立即参与";
+  const box = selectedPoolBox(pool);
+  const tierRows = pool.prizes.map((prize, index) => ({ ...prize, remaining: box.counts[index], probability: box.remaining ? (box.counts[index] / box.remaining) * 100 : 0 }));
+  const grandPrize = tierRows[0];
+  poolDetailTitle.textContent = pool.title;
+  poolDetailMeta.textContent = `剩余 ${box.remaining}/${box.total} 份 · ${pool.popularity} 人参与`;
+  poolDetailType.textContent = pool.type;
+  poolDetailIp.textContent = `${pool.ip} · 正版授权`;
+  document.querySelector("#poolDetailBoxState").textContent = box.lastRemaining ? "LAST 未出" : "LAST 已出";
+  document.querySelector("#poolProbabilityUpdated").textContent = `概率更新于${pool.probabilityUpdated}`;
+  document.querySelector("#poolBoxLabel").textContent = `第 ${box.number} / ${pool.boxes.length} 箱`;
+  poolDetailImage.src = pool.image;
+  poolDetailImage.alt = `${pool.title}赏品预览`;
+  poolDetailPrice.textContent = `¥${pool.price}`;
+  poolRareRate.textContent = grandPrize.remaining ? `${grandPrize.probability.toFixed(grandPrize.probability < 1 ? 1 : 0)}%` : "已抽完";
+  renderPoolOfferSelection(pool, box);
+  poolStockCopy.textContent = `${box.remaining} / ${box.total} 份`;
+  poolStockProgress.setAttribute("aria-valuemax", String(box.total));
+  poolStockProgress.setAttribute("aria-valuenow", String(box.remaining));
+  poolStockProgress.querySelector("b").style.width = `${Math.max(0, Math.min(100, (box.remaining / box.total) * 100))}%`;
+  poolGrandPrizes.innerHTML = [
+    { ...grandPrize, status: `${grandPrize.remaining}/${grandPrize.total}`, copy: grandPrize.remaining ? `${grandPrize.probability.toFixed(1)}%` : "已抽完" },
+    { ...pool.lastPrize, remaining: box.lastRemaining, status: `${box.lastRemaining}/${pool.lastPrize.total}`, copy: box.lastRemaining ? "最后 1 抽必得" : "已抽完" },
+  ].map((prize) => `<article class="${prize.remaining ? "" : "is-sold-out"}" data-remaining="${prize.remaining}" ${activePrizeView === "remaining" && !prize.remaining ? "hidden" : ""}><span>${prize.tier}</span><img src="${prize.image}" alt="${prize.name}">${prize.remaining ? "" : "<b>售罄</b>"}<strong>${prize.name}</strong><small>余 ${prize.status}</small><em>${prize.copy}</em></article>`).join("");
+  poolTierGrid.innerHTML = tierRows.slice(1).map((prize) => `<article class="${prize.remaining ? "" : "is-sold-out"}" data-remaining="${prize.remaining}" ${activePrizeView === "remaining" && !prize.remaining ? "hidden" : ""}><span>${prize.tier}</span><img src="${prize.image}" alt="${prize.name}">${prize.remaining ? "" : "<b>售罄</b>"}<strong>${prize.name}</strong><small>剩余 ${prize.remaining}/${prize.total}</small><em>${prize.remaining ? `${prize.probability.toFixed(1)}%` : "已抽完"}</em></article>`).join("");
+  document.querySelector("[data-pool-box='previous']").disabled = box.number <= 1;
+  document.querySelector("[data-pool-box='next']").disabled = box.number >= pool.boxes.length;
+  if (box.remaining <= 0) enterPoolButton.textContent = "本箱已抽完";
 }
 
-function openPool(pool, trigger = pool, options = {}) {
-  lastPoolTrigger = trigger instanceof HTMLElement ? trigger : pool;
+function openPool(poolId, trigger = null, options = {}) {
+  const pool = typeof poolId === "string" ? poolById.get(poolId) : poolId;
+  if (!pool) return;
+  if (currentPage !== "pool") activatePage("pool", { instant: true });
+  if (!options.fromRoute) window.history.pushState({ poolFromList: true, poolId: pool.id }, "", `#pool/${pool.id}`);
+  lastPoolTrigger = trigger instanceof HTMLElement ? trigger : document.querySelector(`[data-pool-id="${pool.id}"]`);
   renderPoolDetail(pool);
   poolDetailOpen = true;
   poolDetailView.hidden = false;
   poolDetailScroll.scrollTop = 0;
+  poolDetailView.querySelector("[data-close-pool-detail]")?.focus({ preventScroll: true });
   setAppBackgroundInert(false);
-  document.title = `谷多多 · ${pool.dataset.pool}`;
+  document.title = `谷多多 · ${pool.title}`;
   window.requestAnimationFrame(() => {
     poolDetailView.classList.add("is-open");
     poolDetailView.querySelector("[data-close-pool-detail]")?.focus();
   });
-  if (options.pushHistory !== false) window.history.pushState({ poolDetail: pool.dataset.pool }, "", window.location.href);
 }
 
 function closePoolDetail({ restoreFocus = true, updateHistory = true } = {}) {
   if (!poolDetailOpen) return;
   if (activeDialog) closeDialog({ restoreFocus: false });
-  if (updateHistory && window.history.state?.poolDetail) {
-    window.history.back();
+  if (updateHistory) {
+    if (window.history.state?.poolFromList) window.history.back();
+    else window.location.hash = "pool";
     return;
   }
   poolDetailOpen = false;
@@ -1257,7 +1576,6 @@ function closePoolDetail({ restoreFocus = true, updateHistory = true } = {}) {
   poolDetailView.inert = false;
   setAppBackgroundInert(false);
   document.title = `谷多多 · ${pageNames[currentPage]}`;
-  if (!updateHistory && window.history.state?.poolDetail) window.history.replaceState(null, "", window.location.href);
   if (restoreFocus && lastPoolTrigger?.isConnected) lastPoolTrigger.focus();
   lastPoolTrigger = null;
 }
@@ -1265,45 +1583,50 @@ function closePoolDetail({ restoreFocus = true, updateHistory = true } = {}) {
 document.querySelector("[data-close-pool-detail]").addEventListener("click", () => closePoolDetail());
 document.querySelector("[data-pool-share]").addEventListener("click", async () => {
   try {
-    await navigator.clipboard.writeText(`${currentPool.dataset.pool} · ${poolDetailMeta.textContent}`);
-    showToast("赏池信息已复制");
+    await navigator.clipboard.writeText(`${currentPool.title} · ${window.location.href}`);
+    showToast("赏池链接已复制");
   } catch {
     showToast("当前环境无法复制，请稍后再试");
   }
 });
 
-document.querySelectorAll("[data-pool]").forEach((pool) => {
-  pool.addEventListener("click", () => openPool(pool));
-  if (pool.matches(".pool-card")) pool.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      openPool(pool);
-    }
+poolFeature.querySelector("[data-open-feature-pool]").addEventListener("click", (event) => openPool(poolFeature.dataset.poolId, event.currentTarget));
+poolGrid.addEventListener("click", (event) => {
+  const card = event.target.closest("[data-pool-id]");
+  if (card) openPool(card.dataset.poolId, card);
+});
+document.querySelectorAll("[data-pool-box]").forEach((button) => button.addEventListener("click", () => {
+  if (!currentPool) return;
+  const current = selectedPoolBoxes.get(currentPool.id) || currentPool.currentBox;
+  const delta = button.dataset.poolBox === "previous" ? -1 : 1;
+  selectedPoolBoxes.set(currentPool.id, Math.max(1, Math.min(currentPool.boxes.length, current + delta)));
+  renderPoolDetail(currentPool);
+  applyPoolFilters({ announce: false });
+  showToast(`已切换到第 ${selectedPoolBoxes.get(currentPool.id)} 箱`);
+}));
+document.querySelectorAll("[data-prize-view]").forEach((button) => button.addEventListener("click", () => {
+  activePrizeView = button.dataset.prizeView;
+  button.parentElement.querySelectorAll("button").forEach((item) => {
+    const selected = item === button;
+    item.classList.toggle("is-active", selected);
+    item.setAttribute("aria-pressed", String(selected));
   });
+  if (currentPool) renderPoolDetail(currentPool);
+  showToast(activePrizeView === "remaining" ? "仅显示有余量赏品" : "已显示全部赏品");
+}));
+poolOfferList.addEventListener("change", (event) => {
+  if (!currentPool || event.target.name !== "poolOffer") return;
+  activePoolOfferId = event.target.value;
+  poolOfferList.querySelectorAll("label").forEach((label) => label.classList.toggle("is-selected", label.contains(event.target)));
+  updatePoolOfferSummary(currentPool, selectedPoolBox(currentPool));
 });
 enterPoolButton.addEventListener("click", () => {
-  const destination = currentPool?.dataset.poolDestination;
-  if (destination === "draw") {
-    closePoolDetail({ restoreFocus: false, updateHistory: false });
-    navigate("draw");
-    return;
-  }
-  const name = currentPool?.dataset.pool || "限定赏池";
-  const ip = currentPool?.dataset.poolIp || "谷多多";
-  const price = 39;
-  openDrawConfirmation({
-    label: "抽 1 次",
-    count: 1,
-    price,
-    subtotal: price,
-    discount: 0,
-    trigger: enterPoolButton,
-    sourceName: name,
-    sourceIp: ip,
-    sourceImage: currentPool?.querySelector("img")?.getAttribute("src") || "./assets/quick-pool.png",
-    catalog: poolPrizeCatalog[ip] || poolPrizeCatalog.default,
-    meta: "抽 1 次 · 每抽必得 1 件",
-  });
+  if (!currentPool) return;
+  const box = selectedPoolBox(currentPool);
+  if (!box.remaining) return showToast("当前赏箱已抽完，请切换其他箱");
+  const quote = poolOfferQuote(currentPool, activePoolOfferId, box);
+  if (!quote.available) return showToast(`当前箱仅剩 ${box.remaining} 抽，请调整档位`);
+  openDrawConfirmation(createDrawOrder({ sourceType: "pool", sourceId: currentPool.id, offerId: activePoolOfferId, trigger: enterPoolButton }));
 });
 
 /* Draw payment and result */
@@ -1312,6 +1635,9 @@ const drawConfirmBrand = document.querySelector("#drawConfirmBrand");
 const drawConfirmName = document.querySelector("#drawConfirmName");
 const drawConfirmMeta = document.querySelector("#drawConfirmMeta");
 const drawConfirmPrice = document.querySelector("#drawConfirmPrice");
+const drawConfirmPlay = document.querySelector("#drawConfirmPlay");
+const drawConfirmQuantity = document.querySelector("#drawConfirmQuantity");
+const drawConfirmUnitPrice = document.querySelector("#drawConfirmUnitPrice");
 const drawConfirmSubtotal = document.querySelector("#drawConfirmSubtotal");
 const drawConfirmDiscount = document.querySelector("#drawConfirmDiscount");
 const drawConfirmTotal = document.querySelector("#drawConfirmTotal");
@@ -1319,77 +1645,159 @@ const drawPayButton = document.querySelector("[data-confirm-draw]");
 const drawResultTitle = document.querySelector("#drawResultTitle");
 const drawResultMeta = document.querySelector("#drawResultMeta");
 const drawResultGrid = document.querySelector("#drawResultGrid");
+const drawPackPicker = document.querySelector("#drawPackPicker");
+const drawOfferList = document.querySelector("#drawOfferList");
+const drawDockTotal = document.querySelector("#drawDockTotal");
+const drawOpeningPanel = document.querySelector("[data-opening-panel]");
+const drawResultPanel = document.querySelector("[data-result-panel]");
+const drawOpeningImage = document.querySelector("#drawOpeningImage");
 let pendingDraw = null;
-let newPrizeCount = 0;
-const wonPrizes = [];
-const drawPrizeCatalog = [
-  { name: "炼狱杏寿郎 · 果饮徽章", rarity: "A赏", image: "./assets/product-01.png" },
-  { name: "富冈义勇 · 果饮徽章", rarity: "B赏", image: "./assets/product-07.png" },
-  { name: "甘露寺蜜璃 · 亚克力立牌", rarity: "B赏", image: "./assets/product-08.png" },
-  { name: "灶门祢豆子 · 果饮徽章", rarity: "C赏", image: "./assets/product-04.png" },
-  { name: "伊黑小芭内 · 果饮徽章", rarity: "C赏", image: "./assets/product-06.png" },
-  { name: "炎柱 · 果饮亚克力立牌", rarity: "C赏", image: "./assets/product-03.png" },
-];
-const poolPrizeCatalog = {
-  鬼灭之刃: [
-    { name: "柱集合限定亚克力摆件", rarity: "A赏", image: "./assets/product-03.png" },
-    { name: "柱集合角色徽章", rarity: "B赏", image: "./assets/product-01.png" },
-    { name: "柱集合主题收藏卡", rarity: "C赏", image: "./assets/product-04.png" },
-  ],
-  盗墓笔记: [
-    { name: "星河旅程限定摆件", rarity: "A赏", image: "./assets/product-daomu.svg" },
-    { name: "星河旅程角色徽章", rarity: "B赏", image: "./assets/product-daomu.svg" },
-    { name: "星河旅程收藏卡", rarity: "C赏", image: "./assets/product-daomu.svg" },
-  ],
-  纸房子: [
-    { name: "纸房子限定胶片立牌", rarity: "A赏", image: "./assets/product-paperhouse.svg" },
-    { name: "纸房子胶片徽章", rarity: "B赏", image: "./assets/product-paperhouse.svg" },
-    { name: "纸房子主题收藏卡", rarity: "C赏", image: "./assets/product-paperhouse.svg" },
-  ],
-  罗小黑战记: [
-    { name: "罗小黑治愈限定摆件", rarity: "A赏", image: "./assets/product-luoxiaohei.svg" },
-    { name: "罗小黑治愈徽章", rarity: "B赏", image: "./assets/product-luoxiaohei.svg" },
-    { name: "罗小黑治愈收藏卡", rarity: "C赏", image: "./assets/product-luoxiaohei.svg" },
-  ],
-  default: [{ name: "限定主题收藏赏品", rarity: "C赏", image: "./assets/quick-pool.png" }],
-};
-const drawPacks = [
-  { name: "炎柱纪念卡包", ip: "鬼灭之刃", image: "./assets/draw-pack.png", catalog: drawPrizeCatalog },
-  { name: "胶片收藏卡包", ip: "纸房子", image: "./assets/product-paperhouse.svg", catalog: poolPrizeCatalog.纸房子 },
-  { name: "星河旅程卡包", ip: "盗墓笔记", image: "./assets/product-daomu.svg", catalog: poolPrizeCatalog.盗墓笔记 },
-];
-let activeDrawPackIndex = 0;
+let lastCompletedDraw = null;
+const wonPrizes = Array.isArray(demoTransactionState.wonPrizes)
+  ? demoTransactionState.wonPrizes.filter((prize) => prize?.name && prize?.image).slice(0, 120)
+  : [];
+const minePrizeCabinet = document.querySelector("#minePrizeCabinet");
+const minePrizeList = document.querySelector("#minePrizeList");
+const minePrizeEmpty = document.querySelector("#minePrizeEmpty");
+
+function renderMinePrizeCabinet() {
+  minePrizeEmpty.hidden = wonPrizes.length !== 0;
+  minePrizeList.innerHTML = wonPrizes.map((prize, index) => `<article aria-label="${escapeHtml(prize.name)}，${escapeHtml(prize.rarity || prize.tier || "赏品")}">
+    <img src="${prize.image}" alt="${escapeHtml(prize.name)}"><div><span>${escapeHtml(prize.rarity || prize.tier || "已获得")}</span><strong>${escapeHtml(prize.name)}</strong><small>已入柜 · 可与其他赏品合并发货</small></div><button type="button" data-prize-shipping="${index}">申请发货</button>
+  </article>`).join("");
+}
+
+function openMinePrizeCabinet() {
+  navigate("mine", { reset: false });
+  window.setTimeout(() => {
+    minePrizeCabinet.hidden = false;
+    renderMinePrizeCabinet();
+    minePrizeCabinet.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    minePrizeCabinet.focus({ preventScroll: true });
+  }, 90);
+}
+
+minePrizeList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-prize-shipping]");
+  if (!button) return;
+  const prize = wonPrizes[Number(button.dataset.prizeShipping)];
+  if (prize) showToast(`${prize.name}已加入合并发货清单`);
+});
+document.querySelector("[data-open-prize-cabinet]").addEventListener("click", openMinePrizeCabinet);
+document.querySelector("[data-return-to-draw]").addEventListener("click", () => {
+  if (!lastCompletedDraw) return navigate("draw");
+  window.location.hash = lastCompletedDraw.sourceType === "pool" ? `pool/${lastCompletedDraw.sourceId}` : `draw/${lastCompletedDraw.sourceId}`;
+});
+let activeDrawPackId = "flame-pack";
+let activeDrawOfferId = "one";
 const drawCampaignTitle = document.querySelector("#drawCampaignTitle");
 const drawCampaignMeta = document.querySelector("#drawCampaignMeta");
 const drawPackImage = document.querySelector("[data-preview-card] img");
+const drawStageSelection = document.querySelector("#drawStageSelection");
+const drawStageFacts = document.querySelector("#drawStageFacts");
+const drawPackStage = document.querySelector(".pack-stage");
 
 function currentDrawPack() {
-  return drawPacks[activeDrawPackIndex];
+  return drawPackById.get(activeDrawPackId) || drawPackCatalog[0];
 }
 
-function renderDrawPack() {
+function currentDrawOffer() {
   const pack = currentDrawPack();
+  return pack.offers.find((offer) => offer.id === activeDrawOfferId) || pack.offers[0];
+}
+
+function updateDrawSelection() {
+  const pack = currentDrawPack();
+  const offer = currentDrawOffer();
+  const available = offer.count <= pack.batchRemaining;
+  drawDockTotal.textContent = `¥${offer.price}`;
+  drawStageSelection.textContent = `${offer.label} · ¥${offer.price}`;
+  document.querySelectorAll("[data-open-draw-confirm]").forEach((button) => {
+    button.disabled = !available;
+    button.setAttribute("aria-label", available ? `立即开包，${offer.label}，合计${offer.price}元` : `库存不足，无法购买${offer.label}`);
+  });
+}
+
+function renderDrawPack(packId = activeDrawPackId, { updateRoute = true } = {}) {
+  const pack = drawPackById.get(packId) || drawPackCatalog[0];
+  activeDrawPackId = pack.id;
+  if (!pack.offers.some((offer) => offer.id === activeDrawOfferId)) activeDrawOfferId = pack.offers[0].id;
   drawCampaignTitle.textContent = `${pack.ip} · ${pack.name}`;
-  drawCampaignMeta.textContent = `全部 ${pack.catalog.length} 款 · 每包随机 1 款`;
+  drawCampaignMeta.textContent = `全 ${pack.catalog.length} 款 · 每包随机 1 款`;
   drawPackImage.src = pack.image;
   drawPackImage.alt = pack.name;
+  document.querySelector("#drawPackAvailability").textContent = `本批剩余 ${pack.batchRemaining}/${pack.batchTotal} 包 · 更新 ${pack.updatedAt}`;
+  document.querySelector("#drawPackPrice").textContent = `¥${pack.unitPrice} / 包`;
+  const rareRate = pack.catalog.filter((prize) => prize.rarity === "稀有").reduce((sum, prize) => sum + prize.weight, 0);
+  drawStageFacts.innerHTML = `<span>全 ${pack.catalog.length} 款</span><span>稀有款 ${rareRate}%</span><span>每包独立随机</span>`;
+  drawPackStage.dataset.ipGlyph = pack.ip.slice(0, 1);
+  drawPackPicker.innerHTML = drawPackCatalog.map((item) => `<button type="button" data-pack-id="${item.id}" aria-pressed="${item.id === pack.id}"><img src="${item.image}" alt=""><span>${item.name}</span></button>`).join("");
+  drawOfferList.innerHTML = pack.offers.map((offer) => {
+    const available = offer.count <= pack.batchRemaining;
+    return `<label class="${offer.id === activeDrawOfferId ? "is-selected" : ""}${available ? "" : " is-disabled"}"><input type="radio" name="drawOffer" value="${offer.id}" ${offer.id === activeDrawOfferId ? "checked" : ""} ${available ? "" : "disabled"}><span><small>${available ? offer.badge : "库存不足"}</small><strong>${offer.label}</strong><b>¥${offer.price}</b></span></label>`;
+  }).join("");
+  updateDrawSelection();
+  if (updateRoute && parseAppRoute().page === "draw") window.history.replaceState(null, "", `#draw/${pack.id}`);
 }
 
-function openDrawConfirmation(draw) {
+function createDrawOrder({ sourceType, sourceId, offerId, trigger }) {
+  if (sourceType === "pool") {
+    const pool = poolById.get(sourceId);
+    const box = selectedPoolBox(pool);
+    const offer = poolOfferQuote(pool, offerId, box);
+    return { sourceType, sourceId, boxNumber: box.number, offerId: offer.id, label: offer.id === "all" ? `全收 ${offer.count} 抽` : offer.label, count: offer.count, unitPrice: pool.price, price: offer.price, subtotal: offer.subtotal, discount: offer.discount, available: offer.available, trigger, sourceName: pool.title, sourceIp: pool.ip, sourceImage: pool.prizes[0].image, meta: `第 ${box.number} 箱 · ${offer.count} 抽 · 每抽必得 1 件` };
+  }
+  const pack = drawPackById.get(sourceId);
+  const offer = pack.offers.find((item) => item.id === offerId) || pack.offers[0];
+  const subtotal = offer.count * pack.unitPrice;
+  return { sourceType, sourceId, offerId: offer.id, label: offer.label, count: offer.count, unitPrice: pack.unitPrice, price: offer.price, subtotal, discount: subtotal - offer.price, available: offer.count <= pack.batchRemaining, trigger, sourceName: pack.name, sourceIp: pack.ip, sourceImage: pack.image, meta: `${offer.label} · 每包随机 1 款` };
+}
+
+function refreshDrawOrder(draw) {
+  if (!draw) return null;
+  if (draw.sourceType === "pool") {
+    syncPersistedInventory({ poolId: draw.sourceId });
+    const pool = poolById.get(draw.sourceId);
+    if (currentPool?.id === pool?.id) renderPoolDetail(pool);
+  } else {
+    syncPersistedInventory({ packId: draw.sourceId });
+    if (activeDrawPackId === draw.sourceId) renderDrawPack(draw.sourceId, { updateRoute: false });
+  }
+  return createDrawOrder({ sourceType: draw.sourceType, sourceId: draw.sourceId, offerId: draw.offerId, trigger: draw.trigger });
+}
+
+function renderDrawConfirmation(draw) {
   pendingDraw = draw;
   drawConfirmImage.src = draw.sourceImage;
   drawConfirmImage.alt = draw.sourceName;
   drawConfirmBrand.textContent = `${draw.sourceIp} · 正版授权`;
   drawConfirmName.textContent = draw.sourceName;
   drawConfirmMeta.textContent = draw.meta || `${draw.label} · 每包随机 1 款`;
+  drawConfirmPlay.textContent = `${draw.sourceType === "pool" ? "有限赏" : "抽卡机"} · ${draw.sourceIp}`;
+  drawConfirmQuantity.textContent = draw.sourceType === "pool" ? `第 ${draw.boxNumber} 箱 · ${draw.count} 抽` : `卡包 · ${draw.count} 包`;
+  drawConfirmUnitPrice.textContent = `¥${formatMoney(draw.unitPrice)} / ${draw.sourceType === "pool" ? "抽" : "包"}`;
   drawConfirmPrice.textContent = `¥${formatMoney(draw.price)}`;
   drawConfirmSubtotal.textContent = `¥${formatMoney(draw.subtotal)}`;
   drawConfirmDiscount.textContent = `−¥${formatMoney(draw.discount)}`;
   drawConfirmTotal.textContent = `¥${formatMoney(draw.price)}`;
-  drawPayButton.disabled = false;
+  drawPayButton.disabled = !draw.available;
   drawPayButton.classList.remove("is-paying");
-  updateDrawPaymentButton();
+  if (draw.available) updateDrawPaymentButton();
+  else drawPayButton.textContent = "库存不足，请调整档位";
+}
+
+function openDrawConfirmation(draw) {
+  draw = refreshDrawOrder(draw);
+  if (!draw) return;
+  if (!draw.available) {
+    showToast(draw.sourceType === "pool" ? "当前赏箱库存不足，请调整抽取档位" : "当前批次卡包库存不足");
+    return;
+  }
+  cancelDrawTransaction({ clearOrder: false });
+  renderDrawConfirmation(draw);
   openDialog(drawConfirmSheet, draw.trigger);
+  window.history.pushState({ ...(window.history.state || {}), drawConfirmOpen: true }, "", window.location.href);
+  drawConfirmHistoryOpen = true;
 }
 
 function updateDrawPaymentButton() {
@@ -1397,59 +1805,209 @@ function updateDrawPaymentButton() {
   drawPayButton.textContent = `${selectedPayment("drawPayment")} ¥${formatMoney(pendingDraw.price)}`;
 }
 
-document.querySelectorAll("[data-draw-count]").forEach((button) => button.addEventListener("click", () => {
-  const label = button.dataset.drawCount;
-  const count = label.includes("整盒") ? 6 : Number(label.match(/\d+/)?.[0] || 1);
-  const price = Number(button.dataset.drawPrice);
-  const subtotal = count * 20;
-  const pack = currentDrawPack();
-  openDrawConfirmation({
-    label,
-    count,
-    price,
-    subtotal,
-    discount: subtotal - price,
-    trigger: button,
-    sourceName: pack.name,
-    sourceIp: pack.ip,
-    sourceImage: pack.image,
-    catalog: pack.catalog,
-  });
+function randomUnit() {
+  if (window.crypto?.getRandomValues) {
+    const value = new Uint32Array(1);
+    window.crypto.getRandomValues(value);
+    return value[0] / 4294967296;
+  }
+  return Math.random();
+}
+
+function weightedPrize(catalog, weights) {
+  const total = weights.reduce((sum, value) => sum + Math.max(0, value), 0);
+  if (!total) return null;
+  let cursor = randomUnit() * total;
+  for (let index = 0; index < catalog.length; index += 1) {
+    cursor -= Math.max(0, weights[index]);
+    if (cursor < 0) return { prize: catalog[index], index };
+  }
+  return { prize: catalog[catalog.length - 1], index: catalog.length - 1 };
+}
+
+function commitDraw(draw) {
+  let prizes = [];
+  if (draw.sourceType === "pool") {
+    const pool = poolById.get(draw.sourceId);
+    const box = pool.boxes[draw.boxNumber - 1];
+    for (let index = 0; index < draw.count && box.remaining > 0; index += 1) {
+      const selected = weightedPrize(pool.prizes, box.counts);
+      if (selected) {
+        box.counts[selected.index] -= 1;
+        box.remaining -= 1;
+        prizes.push({ ...selected.prize, rarity: selected.prize.tier });
+        if (box.remaining === 0 && box.lastRemaining) {
+          box.lastRemaining = 0;
+          prizes.push({ ...pool.lastPrize, rarity: pool.lastPrize.tier });
+        }
+      }
+    }
+    pool.probabilityUpdated = `今天 ${currentClockTime()}`;
+    if (currentPool?.id === pool.id) renderPoolDetail(pool);
+    applyPoolFilters({ announce: false });
+  } else {
+    const pack = drawPackById.get(draw.sourceId);
+    prizes = Array.from({ length: draw.count }, () => weightedPrize(pack.catalog, pack.catalog.map((prize) => prize.weight))?.prize).filter(Boolean);
+    pack.batchRemaining = Math.max(0, pack.batchRemaining - draw.count);
+    pack.updatedAt = currentClockTime();
+    if (activeDrawPackId === pack.id) renderDrawPack(pack.id, { updateRoute: false });
+  }
+  wonPrizes.unshift(...prizes);
+  accountContent.records.unshift([draw.sourceName, draw.label, `刚刚 · 实付 ¥${formatMoney(draw.price)}`]);
+  const recordCount = document.querySelector("[data-record-count]");
+  if (recordCount) recordCount.textContent = String(Number(recordCount.textContent || 0) + 1);
+  persistDemoTransactionState();
+  renderMinePrizeCabinet();
+  return prizes;
+}
+
+function cancelDrawTransaction({ clearOrder = true } = {}) {
+  drawTransactionToken += 1;
+  window.clearTimeout(drawPaymentTimer);
+  window.clearTimeout(drawOpeningTimer);
+  drawOpeningStageTimers.forEach((timer) => window.clearTimeout(timer));
+  drawOpeningStageTimers = [];
+  drawPaymentTimer = null;
+  drawOpeningTimer = null;
+  drawPaymentPending = false;
+  drawOpeningActive = false;
+  if (clearOrder) pendingDraw = null;
+}
+
+function finishDrawOpening() {
+  if (drawOpeningPanel.hidden) return;
+  window.clearTimeout(drawOpeningTimer);
+  drawOpeningStageTimers.forEach((timer) => window.clearTimeout(timer));
+  drawOpeningStageTimers = [];
+  drawOpeningTimer = null;
+  drawOpeningActive = false;
+  drawResult.classList.remove("is-opening", "is-tearing", "is-flashing");
+  drawOpeningPanel.hidden = true;
+  drawResultPanel.hidden = false;
+  drawResultTitle.focus({ preventScroll: true });
+}
+
+function startDrawOpening() {
+  drawOpeningActive = true;
+  document.querySelector("#drawOpeningStatus").textContent = "包装居中，准备揭晓";
+  drawResult.classList.remove("is-tearing", "is-flashing");
+  void drawOpeningPanel.offsetWidth;
+  drawOpeningStageTimers = [
+    window.setTimeout(() => {
+      if (!drawOpeningActive) return;
+      drawResult.classList.add("is-tearing");
+      document.querySelector("#drawOpeningStatus").textContent = "正在撕开封口";
+    }, 320),
+    window.setTimeout(() => {
+      if (!drawOpeningActive) return;
+      drawResult.classList.add("is-flashing");
+      document.querySelector("#drawOpeningStatus").textContent = "稀有闪光正在揭晓";
+    }, 720),
+  ];
+  drawOpeningTimer = window.setTimeout(finishDrawOpening, 1100);
+}
+
+function renderResult(draw, prizes) {
+  lastCompletedDraw = draw;
+  drawResultTitle.textContent = prizes.length > 1 ? `恭喜获得 ${prizes.length} 件赏品！` : "恭喜获得新赏品！";
+  drawResultGrid.classList.toggle("is-single", prizes.length === 1);
+  drawResultGrid.innerHTML = prizes.map((prize) => `<article title="${escapeHtml(prize.name)}" aria-label="${escapeHtml(prize.name)}，${escapeHtml(prize.rarity)}"><img src="${prize.image}" alt="${escapeHtml(prize.name)}"><span>${escapeHtml(prize.rarity)}</span><strong>${escapeHtml(prize.name)}</strong></article>`).join("");
+  drawResultMeta.textContent = `${prizes.length} 件赏品已存入「我的赏品」 · 实付 ¥${formatMoney(draw.price)}`;
+  drawOpeningImage.src = draw.sourceImage;
+  drawOpeningImage.alt = `正在开启${draw.sourceName}`;
+  drawOpeningPanel.hidden = false;
+  drawResultPanel.hidden = true;
+  drawResult.classList.add("is-opening");
+  openDialog(drawResult, draw.trigger);
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) {
+    drawOpeningActive = true;
+    finishDrawOpening();
+  } else {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(startDrawOpening));
+  }
+}
+
+drawPackPicker.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-pack-id]");
+  if (!button) return;
+  activeDrawOfferId = "one";
+  renderDrawPack(button.dataset.packId);
+  showToast(`已切换到${currentDrawPack().name}`);
+});
+drawOfferList.addEventListener("change", (event) => {
+  activeDrawOfferId = event.target.value;
+  drawOfferList.querySelectorAll("label").forEach((label) => label.classList.toggle("is-selected", label.contains(event.target)));
+  updateDrawSelection();
+});
+document.querySelectorAll("[data-open-draw-confirm]").forEach((button) => button.addEventListener("click", (event) => {
+  openDrawConfirmation(createDrawOrder({ sourceType: "pack", sourceId: activeDrawPackId, offerId: activeDrawOfferId, trigger: event.currentTarget }));
 }));
 
 drawPayButton.addEventListener("click", (event) => {
-  if (!pendingDraw) return;
-  const draw = pendingDraw;
+  if (!pendingDraw || drawPaymentPending) return;
+  const previousDraw = pendingDraw;
+  const draw = refreshDrawOrder(previousDraw);
+  if (!draw?.available) {
+    if (draw) renderDrawConfirmation(draw);
+    showToast(draw?.sourceType === "pool" ? "当前赏箱库存不足，请调整档位" : "当前批次库存不足，请调整档位");
+    return;
+  }
+  if (draw.count !== previousDraw.count || draw.price !== previousDraw.price) {
+    renderDrawConfirmation(draw);
+    showToast("库存已更新，订单金额已重算，请再次确认支付");
+    return;
+  }
   const paymentMethod = selectedPayment("drawPayment");
   const button = event.currentTarget;
+  const token = ++drawTransactionToken;
+  drawPaymentPending = true;
   button.disabled = true;
   button.classList.add("is-paying");
   button.textContent = `${paymentMethod}支付中…`;
-  window.setTimeout(() => {
-    const drawOffset = newPrizeCount;
-    const catalog = draw.catalog || drawPrizeCatalog;
-    const prizes = Array.from({ length: draw.count }, (_, index) => catalog[(drawOffset + index) % catalog.length]);
-    newPrizeCount += draw.count;
-    wonPrizes.unshift(...prizes);
-    accountContent.records.unshift([draw.sourceName, draw.label, `刚刚 · 实付 ¥${formatMoney(draw.price)}`]);
-    const recordCount = document.querySelector("[data-record-count]");
-    if (recordCount) recordCount.textContent = String(Number(recordCount.textContent || 0) + 1);
-    drawResultTitle.textContent = draw.count > 1 ? `恭喜获得 ${draw.count} 件赏品！` : "恭喜获得新赏品！";
-    drawResultGrid.classList.toggle("is-single", draw.count === 1);
-    drawResultGrid.innerHTML = prizes.map((prize) => `<article><img src="${prize.image}" alt="${prize.name}"><span>${prize.rarity}</span><strong>${prize.name}</strong></article>`).join("");
-    drawResultMeta.textContent = `${draw.count} 件赏品已存入「我的赏品」 · 实付 ¥${formatMoney(draw.price)}`;
+  drawPaymentTimer = window.setTimeout(() => {
+    if (token !== drawTransactionToken || !drawPaymentPending) return;
+    const prizes = commitDraw(draw);
+    drawPaymentPending = false;
     button.classList.remove("is-paying");
+    button.disabled = false;
     button.textContent = `${paymentMethod} ¥${formatMoney(draw.price)}`;
-    openDialog(drawResult, draw.trigger);
-  }, 760);
+    completedDrawAfterHistory = { draw, prizes };
+    if (drawConfirmHistoryOpen) window.history.back();
+    else {
+      closeDialog({ restoreFocus: false, force: true, updateHistory: false });
+      const completed = completedDrawAfterHistory;
+      completedDrawAfterHistory = null;
+      renderResult(completed.draw, completed.prizes);
+    }
+  }, 680);
+});
+
+document.querySelector("[data-skip-opening]").addEventListener("click", finishDrawOpening);
+document.querySelector("[data-draw-again]").addEventListener("click", () => {
+  const previous = lastCompletedDraw;
+  closeDialog({ restoreFocus: false, force: true });
+  if (!previous) return;
+  const next = createDrawOrder({ sourceType: previous.sourceType, sourceId: previous.sourceId, offerId: previous.offerId, trigger: previous.trigger });
+  if (next.sourceType === "pool" && !selectedPoolBox(poolById.get(next.sourceId)).remaining) return showToast("当前赏箱已抽完，请切换其他箱");
+  openDrawConfirmation(next);
+});
+document.querySelector("[data-view-prizes]").addEventListener("click", () => {
+  closeDialog({ restoreFocus: false, force: true });
+  openMinePrizeCabinet();
 });
 
 /* Account detail */
 const accountSheetTitle = document.querySelector("#accountSheetTitle");
 const accountSheetList = document.querySelector("#accountSheetList");
+const accountSheetClose = accountSheet.querySelector("[data-close-sheet]");
+
+function updateAccountSheetCloseLabel() {
+  accountSheetClose.setAttribute("aria-label", `关闭${accountSheetTitle.textContent.trim()}`);
+}
 const accountContent = {
   orders: [["炎柱果饮纪念徽章", "待发货", "¥29.9"], ["柱集结限定摆件", "待收货", "¥129"], ["蜜璃亚克力立牌", "待付款", "¥39"]],
-  records: [["炎柱纪念卡包", "抽 1 包", "今日 18:24"], ["柱集合赏", "一番赏", "昨日 21:08"]],
+  records: Array.isArray(demoTransactionState.records) ? demoTransactionState.records.slice(0, 120) : [["炎柱纪念卡包", "抽 1 包", "今日 18:24"], ["柱集合赏", "一番赏", "昨日 21:08"]],
   coupons: [["新人满减券", "满 99 减 15", "7 天后到期"], ["包邮券", "全场可用", "30 天后到期"]],
   "after-sale": [["售后进度", "暂无进行中的售后", "已提交的申请会在此展示"], ["破损补寄", "签收后 48 小时内", "请保留外箱并上传开箱凭证"], ["退款说明", "按商品规则处理", "抽赏结果生成后不支持无理由取消"]],
   support: [["在线客服", "工作日 09:00–21:00", "当前可咨询"], ["订单问题", "提交订单号", "客服将在 10 分钟内响应"], ["售后专线", "400-826-2026", "工作日 09:00–18:00"]],
@@ -1460,6 +2018,7 @@ const accountContent = {
 
 function renderAccountAddresses() {
   accountSheetTitle.textContent = "收货地址";
+  updateAccountSheetCloseLabel();
   accountSheet.classList.remove("is-address-form");
   accountSheetList.innerHTML = `
     <div class="account-address-list" role="radiogroup" aria-label="选择收货地址">
@@ -1484,6 +2043,7 @@ function renderAccountAddresses() {
 
 function renderAddressForm() {
   accountSheetTitle.textContent = "新增收货地址";
+  updateAccountSheetCloseLabel();
   accountSheet.classList.add("is-address-form");
   accountSheetList.innerHTML = `
     <form class="account-address-form" data-account-address-form novalidate>
@@ -1503,6 +2063,7 @@ function renderAddressForm() {
 function openAccountView(view, filter = "", trigger = document.activeElement) {
   const titles = { orders: "我的订单", prizes: "我的赏品", records: "抽赏记录", coupons: "我的优惠券", "after-sale": "售后服务", address: "收货地址", support: "客服中心", invite: "邀请有礼", privacy: "隐私设置", about: "关于我们" };
   accountSheetTitle.textContent = filter || titles[view] || "个人中心";
+  updateAccountSheetCloseLabel();
   accountSheet.classList.toggle("is-address-view", view === "address");
   if (view === "address") {
     pendingAccountAddressId = activeAddressId;
@@ -1593,7 +2154,7 @@ function openDrawInfo(view, trigger) {
   const configurations = {
     probability: {
       title: `${pack.name} · 概率公示`,
-      rows: [["A赏", "8%", "限定款 · 剩余库存实时计算"], ["B赏", "22%", "角色款 · 每包独立随机"], ["C赏", "70%", "常规款 · 每抽必得 1 件"]],
+      rows: pack.catalog.map((prize) => [prize.name, `${prize.weight}%`, `${prize.rarity} · 每包独立随机`]),
     },
     catalog: {
       title: `${pack.name} · 赏品一览`,
@@ -1620,21 +2181,8 @@ function openDrawInfo(view, trigger) {
 
 document.querySelectorAll("[data-draw-info]").forEach((button) => button.addEventListener("click", () => openDrawInfo(button.dataset.drawInfo, button)));
 document.querySelector("[data-preview-card]").addEventListener("click", (event) => openDrawInfo("catalog", event.currentTarget));
-document.querySelector("[data-change-pack]").addEventListener("click", () => {
-  activeDrawPackIndex = (activeDrawPackIndex + 1) % drawPacks.length;
-  renderDrawPack();
-  showToast(`已切换到${currentDrawPack().name}`);
-});
-document.querySelector("[data-draw-reminder]").addEventListener("click", (event) => {
-  const button = event.currentTarget;
-  const selected = button.getAttribute("aria-pressed") !== "true";
-  button.setAttribute("aria-pressed", String(selected));
-  button.classList.toggle("is-selected", selected);
-  button.querySelector("span").textContent = selected ? "已订阅" : "上新提醒";
-  showToast(selected ? "已订阅该系列上新提醒" : "已取消上新提醒");
-});
 document.querySelector("[data-draw-share]").addEventListener("click", async () => {
-  const shareUrl = `${window.location.href.split("#")[0]}#draw`;
+  const shareUrl = `${window.location.href.split("#")[0]}#draw/${activeDrawPackId}`;
   try {
     await navigator.clipboard.writeText(shareUrl);
     showToast("卡包链接已复制");
@@ -1656,27 +2204,43 @@ const revealObserver = new IntersectionObserver(
 );
 document.querySelectorAll(".reveal").forEach((section) => revealObserver.observe(section));
 
-window.addEventListener("hashchange", () => routeFromHash());
+window.addEventListener("hashchange", () => {
+  if (drawPaymentPending) {
+    cancelDrawTransaction();
+    closeDialog({ restoreFocus: false, force: true, updateHistory: false });
+    showToast("页面已切换，本次支付已取消");
+  }
+  routeFromHash();
+});
 window.addEventListener("popstate", (event) => {
-  if (poolDetailOpen) {
-    closePoolDetail({ updateHistory: false });
+  if (activeDialog === drawConfirmSheet && drawConfirmHistoryOpen) {
+    const completed = completedDrawAfterHistory;
+    completedDrawAfterHistory = null;
+    cancelDrawTransaction({ clearOrder: true });
+    closeDialog({ restoreFocus: !completed, force: true, updateHistory: false });
+    if (completed) window.requestAnimationFrame(() => renderResult(completed.draw, completed.prizes));
     return;
+  }
+  if (drawPaymentPending) {
+    cancelDrawTransaction();
+    closeDialog({ restoreFocus: false, force: true, updateHistory: false });
   }
   if (productDetailOpen) {
     closeProductDetail({ updateHistory: false });
     return;
   }
-  if (event.state?.poolDetail) {
-    const pool = [...document.querySelectorAll("[data-pool]")].find((item) => item.dataset.pool === event.state.poolDetail);
-    if (pool) openPool(pool, pool, { pushHistory: false });
-    return;
-  }
   if (event.state?.productDetail) {
     const product = productCatalog.find((item) => item.id === event.state.productDetail);
     if (product) openProductDetail(product, product.card, { pushHistory: false });
+    return;
   }
+  routeFromHash({ instant: true });
 });
 window.addEventListener("load", () => {
+  if (window.location.hash === "#draw") window.history.replaceState(null, "", "#draw/flame-pack");
+  const recordCount = document.querySelector("[data-record-count]");
+  if (recordCount) recordCount.textContent = String(accountContent.records.length);
+  renderMinePrizeCabinet();
   routeFromHash({ instant: true });
   applyHomeFilters({ announce: false });
   applyPoolFilters({ announce: false });
