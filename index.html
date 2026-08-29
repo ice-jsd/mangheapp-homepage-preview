@@ -16,7 +16,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=pool-draw-v2" />
+    <link rel="stylesheet" href="./styles.css?v=draw-focus-v3-3" />
   </head>
   <body>
     <div class="preview-stage">
@@ -387,40 +387,51 @@
             </main>
           </section>
 
-          <section class="app-page draw-page draw-page-v2" id="page-draw" data-page="draw" aria-label="抽卡机">
-            <header class="draw-header">
-              <div class="draw-title"><span aria-hidden="true">✦</span><div><small>即开即得</small><h1>抽卡机</h1></div></div>
-              <button class="round-control" type="button" data-draw-share aria-label="分享当前卡包"><img src="./assets/icon-share.svg" alt="" /></button>
+          <section class="app-page draw-page draw-page-v2 draw-focus-v3" id="page-draw" data-page="draw" aria-label="抽卡机">
+            <div class="draw-scene-backdrop" aria-hidden="true"><span id="drawThemeWord">燃魂</span><i></i><b></b></div>
+            <header class="draw-scene-topbar">
+              <button class="draw-topbar-button" type="button" data-draw-back aria-label="返回上一页"><img src="./assets/icon-back.svg" alt="" /></button>
+              <button class="draw-topbar-title" type="button" data-draw-pack-menu aria-haspopup="dialog" aria-label="切换卡包"><strong>抽卡机</strong><span id="drawTopbarIp">鬼灭之刃 · 切换卡包</span></button>
+              <button class="draw-topbar-button draw-record-button" type="button" data-account-view="records" aria-label="查看抽卡记录"><img src="./assets/icon-draw.svg" alt="" /><span>记录</span></button>
+              <button class="draw-topbar-button" type="button" data-draw-share aria-label="分享当前卡包"><img src="./assets/icon-share.svg" alt="" /></button>
             </header>
-            <main class="draw-content">
-              <article class="draw-campaign">
-                <div><span>正版授权</span><h2 id="drawCampaignTitle">鬼灭之刃 · 炎柱纪念卡包</h2><p id="drawCampaignMeta">全 6 款 · 每包随机 1 款</p></div>
-                <button type="button" data-draw-info="probability">玩法概率</button>
-              </article>
 
-              <section class="draw-pack-picker" aria-label="选择卡包"><div id="drawPackPicker"></div></section>
-
-              <section class="pack-stage" aria-label="当前卡包预览">
-                <div class="pack-stage-copy"><span id="drawPackAvailability">现货充足</span><strong id="drawPackPrice">¥20 / 包</strong></div>
-                <button class="pack-button" type="button" data-preview-card aria-label="查看当前卡包赏品"><img src="./assets/draw-pack.png" alt="炎柱纪念卡包" /></button>
+            <main class="draw-scene-content">
+              <section class="draw-scene-intro" aria-labelledby="drawCampaignTitle">
+                <div class="draw-auth-line"><span>正版授权</span><b id="drawVendorLine">抽取后自动入柜</b></div>
+                <p id="drawThemeTitle">炎柱燃魂主题</p>
+                <h1 id="drawCampaignTitle">炎柱纪念卡包</h1>
+                <p id="drawCampaignMeta">每包随机 1 款</p>
               </section>
 
-              <div class="draw-stage-facts" id="drawStageFacts" aria-live="polite"><span>全 6 款</span><span>稀有款 8%</span><span>每包独立随机</span></div>
-              <div class="draw-stage-buy"><span>已选 <strong id="drawStageSelection">1包 · ¥20</strong></span><button type="button" data-open-draw-confirm>立即开包</button></div>
-
-              <nav class="draw-quick-grid" aria-label="卡包快捷信息">
-                <button type="button" data-draw-info="catalog"><img src="./assets/icon-pool.svg" alt="" /><span>赏品一览</span></button>
-                <button type="button" data-draw-info="probability"><img src="./assets/icon-crystal.svg" alt="" /><span>玩法概率</span></button>
-                <button type="button" data-account-view="records"><img src="./assets/icon-draw.svg" alt="" /><span>抽卡记录</span></button>
-                <button type="button" data-draw-info="collection"><img src="./assets/icon-profile.svg" alt="" /><span>系列图鉴</span></button>
-              </nav>
-
-              <section class="draw-console" aria-labelledby="drawCountTitle">
-                <div class="console-title"><div><small>购买档位</small><h2 id="drawCountTitle">选择开包数量</h2></div><p>支付成功后立即开包</p></div>
-                <div class="draw-options" id="drawOfferList" role="radiogroup" aria-label="选择开包数量"></div>
-                <div class="draw-dock-total"><span>合计 <strong id="drawDockTotal">¥20</strong></span><button type="button" data-open-draw-confirm>立即开包</button></div>
+              <section class="draw-pack-carousel" id="drawPackPicker" aria-label="卡包轮播，使用左右方向键切换" tabindex="0">
+                <button class="draw-neighbor-pack is-previous" type="button" data-pack-neighbor="previous" aria-label="查看上一个卡包">
+                  <span class="draw-pack-shell" aria-hidden="true"><span class="draw-pack-art is-mosaic"><img src="./assets/product-luoxiaohei.svg" alt="" draggable="false" /></span><em class="draw-pack-series">治愈森林</em></span>
+                </button>
+                <button class="pack-button draw-active-pack" type="button" data-preview-card aria-label="查看炎柱纪念卡包全部赏品">
+                  <span class="draw-pack-shell" aria-hidden="true"><span class="draw-pack-art is-single"><img src="./assets/draw-pack.png" alt="" draggable="false" /></span><em class="draw-pack-series">炎柱燃魂</em></span>
+                </button>
+                <button class="draw-neighbor-pack is-next" type="button" data-pack-neighbor="next" aria-label="查看下一个卡包">
+                  <span class="draw-pack-shell" aria-hidden="true"><span class="draw-pack-art is-mosaic"><img src="./assets/product-paperhouse.svg" alt="" draggable="false" /></span><em class="draw-pack-series">劫案胶片</em></span>
+                </button>
+                <div class="draw-carousel-indicators" id="drawCarouselIndicators" aria-hidden="true"></div>
+                <strong id="drawPackPrice">¥20 / 包</strong>
               </section>
+
+              <div class="draw-stage-facts" id="drawStageFacts" aria-live="polite" aria-atomic="true">
+                <span>全 6 款</span><span>稀有款 8%</span><span id="drawPackAvailability">本批剩余 48/72 包</span>
+              </div>
+              <div class="draw-scene-links" aria-label="卡包信息">
+                <button type="button" data-draw-info="catalog"><img src="./assets/icon-pool.svg" alt="" /><span>查看全部赏品</span></button>
+                <button type="button" data-draw-info="probability"><img src="./assets/icon-crystal.svg" alt="" /><span>玩法与概率</span></button>
+              </div>
             </main>
+
+            <aside class="draw-purchase-dock" aria-labelledby="drawCountTitle">
+              <div class="draw-purchase-heading"><div><span>选档支付，即刻揭晓</span><h2 id="drawCountTitle">选择开包数量</h2></div><strong id="drawDockTotal">¥20 起</strong></div>
+              <div class="draw-direct-offers" id="drawOfferList" role="group" aria-label="直接选择数量并购买"></div>
+              <span class="sr-only" id="drawStageSelection" aria-live="polite">当前卡包 1 包 20 元</span>
+            </aside>
           </section>
 
           <section class="app-page cart-page" id="page-cart" data-page="cart" aria-label="购物车">
@@ -659,13 +670,13 @@
             <span>正在开包</span><div class="opening-pack"><i></i><b aria-hidden="true"></b><img id="drawOpeningImage" src="./assets/draw-pack.png" alt="正在开启的卡包" /></div><p id="drawOpeningStatus" role="status" aria-live="polite">包装已就位</p><button type="button" data-skip-opening>跳过动画</button>
           </div>
           <div class="draw-result-content" data-result-panel hidden>
-            <div class="result-spark" aria-hidden="true">✦</div><span>抽取结果</span><h2 id="drawResultTitle" tabindex="-1">恭喜获得赏品！</h2><div class="draw-result-grid" id="drawResultGrid"></div><p id="drawResultMeta" aria-live="polite">1 件赏品已存入「我的赏品」</p><div class="draw-result-actions"><button type="button" data-draw-again>再抽一次</button><button type="button" data-view-prizes>查看赏品</button></div>
+            <div class="result-spark" aria-hidden="true">✦</div><span>抽取结果</span><h2 id="drawResultTitle" tabindex="-1">恭喜获得赏品！</h2><div class="draw-result-grid" id="drawResultGrid"></div><p id="drawResultMeta" aria-live="polite">1 件赏品已存入「我的赏品」</p><div class="draw-result-actions"><button type="button" data-draw-again>继续抽</button><button type="button" data-view-prizes>查看赏品柜</button></div>
           </div>
         </section>
 
         <div class="toast" id="toast" role="status" aria-live="polite"></div>
       </div>
     </div>
-    <script src="./app.js?v=pool-draw-v2" defer></script>
+    <script src="./app.js?v=draw-focus-v3-3" defer></script>
   </body>
 </html>

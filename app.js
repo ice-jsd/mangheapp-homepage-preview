@@ -1,5 +1,6 @@
 const scrollView = document.querySelector("#scrollView");
 const bottomNav = document.querySelector(".bottom-nav");
+const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
 const pages = [...document.querySelectorAll(".app-page")];
 const bottomItems = [...document.querySelectorAll(".bottom-item")];
@@ -7,6 +8,15 @@ const pageNames = { home: "首页", pool: "赏池", draw: "抽卡", cart: "购�
 const scrollPositions = new Map();
 let currentPage = null;
 let toastTimer;
+let drawReturnHash = "";
+let drawEnteredInternally = false;
+
+function setDrawFocusMode(value) {
+  app.classList.toggle("is-draw-focus", value);
+  bottomNav.inert = value;
+  if (value) bottomNav.setAttribute("aria-hidden", "true");
+  else bottomNav.removeAttribute("aria-hidden");
+}
 
 function showToast(message) {
   window.clearTimeout(toastTimer);
@@ -28,6 +38,7 @@ function activatePage(page, options = {}) {
   const nextPage = pageNames[page] ? page : "home";
   if (currentPage) scrollPositions.set(currentPage, scrollView.scrollTop);
   currentPage = nextPage;
+  setDrawFocusMode(nextPage === "draw");
   pages.forEach((item) => item.classList.toggle("is-active", item.dataset.page === nextPage));
   bottomItems.forEach((item) => {
     const selected = item.dataset.pageTarget === nextPage;
@@ -48,6 +59,10 @@ function navigate(page, options = {}) {
     return;
   }
   const destination = page === "draw" ? `draw/${typeof activeDrawPackId !== "undefined" ? activeDrawPackId : "flame-pack"}` : page;
+  if (page === "draw" && currentPage !== "draw") {
+    drawReturnHash = window.location.hash || "#home";
+    drawEnteredInternally = true;
+  }
   if (currentPage === page) {
     const currentRoute = window.location.hash.slice(1);
     if (currentRoute === destination) activatePage(page, { reset: options.reset !== false });
@@ -375,7 +390,9 @@ const poolCatalog = [
 
 const drawPackCatalog = [
   {
-    id: "flame-pack", name: "炎柱纪念卡包", ip: "鬼灭之刃", image: "./assets/draw-pack.png", batchRemaining: 48, batchTotal: 72, updatedAt: "18:30", unitPrice: 20,
+    id: "flame-pack", name: "炎柱纪念卡包", ip: "鬼灭之刃", image: "./assets/draw-pack.png", packArt: "single", batchRemaining: 48, batchTotal: 72, updatedAt: "18:30", unitPrice: 20,
+    themeName: "炎柱燃魂", vendor: "官方授权发行", saleState: "现货", fulfillment: "开奖后自动存入赏品柜", batch: "炎柱燃魂批次", benefits: ["正版授权", "现货发售"],
+    theme: { word: "燃魂", page: "#111839", surface: "#171f4d", accent: "#c43d2b", glow: "#f2b22e", ink: "#fffaf0", motif: "rgba(242,178,46,.18)" },
     offers: [{ id: "one", label: "1包", count: 1, price: 20, badge: "轻松试手" }, { id: "three", label: "3包", count: 3, price: 58, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 116, badge: "省 ¥4" }],
     catalog: [
       { name: "炼狱杏寿郎 · 果饮徽章", rarity: "稀有", image: "./assets/product-01.png", weight: 8 },
@@ -388,6 +405,8 @@ const drawPackCatalog = [
   },
   {
     id: "film-pack", name: "胶片收藏卡包", ip: "纸房子", image: "./assets/product-paperhouse.svg", batchRemaining: 35, batchTotal: 60, updatedAt: "18:26", unitPrice: 18,
+    themeName: "劫案胶片", vendor: "官方授权发行", saleState: "现货", fulfillment: "开奖后自动存入赏品柜", batch: "红金胶片批次", benefits: ["正版授权", "现货发售"],
+    theme: { word: "劫案", page: "#15171c", surface: "#292c33", accent: "#a72522", glow: "#d8a84e", ink: "#fffaf0", motif: "rgba(167,37,34,.22)" },
     offers: [{ id: "one", label: "1包", count: 1, price: 18, badge: "单包体验" }, { id: "three", label: "3包", count: 3, price: 52, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 102, badge: "省 ¥6" }],
     catalog: [
       { name: "教授 · 金边胶片卡", rarity: "稀有", image: "./assets/product-paperhouse.svg", weight: 10 },
@@ -398,6 +417,8 @@ const drawPackCatalog = [
   },
   {
     id: "galaxy-pack", name: "星河旅程卡包", ip: "盗墓笔记", image: "./assets/product-daomu.svg", batchRemaining: 18, batchTotal: 48, updatedAt: "18:21", unitPrice: 22,
+    themeName: "星河旅程", vendor: "官方授权发行", saleState: "现货", fulfillment: "开奖后自动存入赏品柜", batch: "星河夜航批次", benefits: ["正版授权", "现货发售"],
+    theme: { word: "星河", page: "#071b34", surface: "#0d3550", accent: "#1a93a8", glow: "#d6b45d", ink: "#fffaf0", motif: "rgba(26,163,181,.2)" },
     offers: [{ id: "one", label: "1包", count: 1, price: 22, badge: "单包体验" }, { id: "three", label: "3包", count: 3, price: 64, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 126, badge: "省 ¥6" }],
     catalog: [
       { name: "星河终点 · 镭射卡", rarity: "稀有", image: "./assets/product-daomu.svg", weight: 8 },
@@ -408,6 +429,8 @@ const drawPackCatalog = [
   },
   {
     id: "healing-pack", name: "治愈森林卡包", ip: "罗小黑战记", image: "./assets/product-luoxiaohei.svg", batchRemaining: 54, batchTotal: 72, updatedAt: "18:18", unitPrice: 19,
+    themeName: "治愈森林", vendor: "官方授权发行", saleState: "现货", fulfillment: "开奖后自动存入赏品柜", batch: "森林漫游批次", benefits: ["正版授权", "现货发售"],
+    theme: { word: "森林", page: "#0d2d26", surface: "#17483c", accent: "#69cda6", glow: "#d1ae4b", ink: "#fffaf0", motif: "rgba(105,205,166,.2)" },
     offers: [{ id: "one", label: "1包", count: 1, price: 19, badge: "单包体验" }, { id: "three", label: "3包", count: 3, price: 55, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 108, badge: "省 ¥6" }],
     catalog: [
       { name: "小黑 · 月夜闪卡", rarity: "稀有", image: "./assets/product-luoxiaohei.svg", weight: 10 },
@@ -626,6 +649,7 @@ let lastDialogTrigger = null;
 let poolDetailOpen = false;
 let productDetailOpen = false;
 let drawPaymentPending = false;
+let drawPaymentCommitted = false;
 let drawOpeningActive = false;
 let drawTransactionToken = 0;
 let drawPaymentTimer = null;
@@ -649,7 +673,7 @@ function setLayerInert(element, value) {
 
 function setAppBackgroundInert(value) {
   setLayerInert(scrollView, value || poolDetailOpen || productDetailOpen);
-  setLayerInert(bottomNav, value || poolDetailOpen || productDetailOpen);
+  setLayerInert(bottomNav, value || poolDetailOpen || productDetailOpen || app.classList.contains("is-draw-focus"));
   setLayerInert(poolDetailView, value || productDetailOpen);
   setLayerInert(productDetailView, value || poolDetailOpen);
 }
@@ -677,6 +701,10 @@ function openDialog(dialog, trigger = document.activeElement) {
 
 function closeDialog({ restoreFocus = true, force = false, updateHistory = true } = {}) {
   if (!activeDialog) return;
+  if (!force && activeDialog === drawConfirmSheet && drawPaymentCommitted) {
+    showToast("支付成功，正在开包");
+    return false;
+  }
   if (activeDialog === drawConfirmSheet && drawConfirmHistoryOpen && updateHistory) {
     cancelDrawTransaction({ clearOrder: true });
     window.history.back();
@@ -1418,7 +1446,7 @@ checkoutPayButton.addEventListener("click", (event) => {
   const paymentMethod = selectedPayment("checkoutPayment");
   button.disabled = true;
   button.classList.add("is-paying");
-  button.textContent = `${paymentMethod}支付中…`;
+  button.textContent = `${paymentMethod}中…`;
   window.setTimeout(() => {
     const orderNumber = `GDD${Date.now().toString().slice(-10)}`;
     if (checkoutContext.mode === "cart") {
@@ -1686,16 +1714,38 @@ minePrizeList.addEventListener("click", (event) => {
 document.querySelector("[data-open-prize-cabinet]").addEventListener("click", openMinePrizeCabinet);
 document.querySelector("[data-return-to-draw]").addEventListener("click", () => {
   if (!lastCompletedDraw) return navigate("draw");
-  window.location.hash = lastCompletedDraw.sourceType === "pool" ? `pool/${lastCompletedDraw.sourceId}` : `draw/${lastCompletedDraw.sourceId}`;
+  if (lastCompletedDraw.sourceType === "pool") window.location.hash = `pool/${lastCompletedDraw.sourceId}`;
+  else {
+    drawReturnHash = window.location.hash || "#mine";
+    drawEnteredInternally = true;
+    window.location.hash = `draw/${lastCompletedDraw.sourceId}`;
+  }
 });
 let activeDrawPackId = "flame-pack";
 let activeDrawOfferId = "one";
+const pageDraw = document.querySelector("#page-draw");
 const drawCampaignTitle = document.querySelector("#drawCampaignTitle");
 const drawCampaignMeta = document.querySelector("#drawCampaignMeta");
-const drawPackImage = document.querySelector("[data-preview-card] img");
+const drawActivePack = document.querySelector("[data-preview-card]");
 const drawStageSelection = document.querySelector("#drawStageSelection");
 const drawStageFacts = document.querySelector("#drawStageFacts");
-const drawPackStage = document.querySelector(".pack-stage");
+const drawThemeWord = document.querySelector("#drawThemeWord");
+const drawThemeTitle = document.querySelector("#drawThemeTitle");
+const drawTopbarIp = document.querySelector("#drawTopbarIp");
+const drawVendorLine = document.querySelector("#drawVendorLine");
+const drawCarouselIndicators = document.querySelector("#drawCarouselIndicators");
+const drawPreviousPack = document.querySelector('[data-pack-neighbor="previous"]');
+const drawNextPack = document.querySelector('[data-pack-neighbor="next"]');
+let drawPackTransitionTimer = null;
+let drawCarouselResetFrame = null;
+const drawThemeVariables = {
+  page: "--draw-theme-page",
+  surface: "--draw-theme-surface",
+  accent: "--draw-theme-accent",
+  glow: "--draw-theme-glow",
+  ink: "--draw-theme-ink",
+  motif: "--draw-theme-motif",
+};
 
 function currentDrawPack() {
   return drawPackById.get(activeDrawPackId) || drawPackCatalog[0];
@@ -1709,35 +1759,90 @@ function currentDrawOffer() {
 function updateDrawSelection() {
   const pack = currentDrawPack();
   const offer = currentDrawOffer();
-  const available = offer.count <= pack.batchRemaining;
-  drawDockTotal.textContent = `¥${offer.price}`;
-  drawStageSelection.textContent = `${offer.label} · ¥${offer.price}`;
-  document.querySelectorAll("[data-open-draw-confirm]").forEach((button) => {
-    button.disabled = !available;
-    button.setAttribute("aria-label", available ? `立即开包，${offer.label}，合计${offer.price}元` : `库存不足，无法购买${offer.label}`);
+  drawDockTotal.textContent = `¥${pack.unitPrice} 起`;
+  drawStageSelection.textContent = `当前卡包${offer.label}，${offer.price}元`;
+}
+
+function applyDrawTheme(pack) {
+  Object.entries(drawThemeVariables).forEach(([key, variable]) => pageDraw.style.setProperty(variable, pack.theme[key]));
+  pageDraw.dataset.theme = pack.id;
+  drawThemeWord.textContent = pack.theme.word;
+}
+
+function neighboringDrawPacks(pack) {
+  const index = drawPackCatalog.findIndex((item) => item.id === pack.id);
+  return {
+    previous: drawPackCatalog[(index - 1 + drawPackCatalog.length) % drawPackCatalog.length],
+    next: drawPackCatalog[(index + 1) % drawPackCatalog.length],
+  };
+}
+
+function renderDrawPackShell(button, pack) {
+  const art = button.querySelector(".draw-pack-art");
+  const series = button.querySelector(".draw-pack-series");
+  const useSingleArt = pack.packArt === "single";
+  art.className = `draw-pack-art ${useSingleArt ? "is-single" : "is-mosaic"}`;
+  art.innerHTML = (useSingleArt ? [{ image: pack.image }] : pack.catalog.slice(0, 4))
+    .map((item) => `<img src="${escapeHtml(item.image)}" alt="" draggable="false">`)
+    .join("");
+  series.textContent = pack.themeName;
+}
+
+function resetDrawCarouselPosition({ focus = false } = {}) {
+  if (focus) drawPackPicker.focus({ preventScroll: true });
+  drawPackPicker.scrollLeft = 0;
+  window.cancelAnimationFrame(drawCarouselResetFrame);
+  drawCarouselResetFrame = window.requestAnimationFrame(() => {
+    drawPackPicker.scrollLeft = 0;
   });
 }
 
-function renderDrawPack(packId = activeDrawPackId, { updateRoute = true } = {}) {
+function renderDrawPack(packId = activeDrawPackId, { updateRoute = true, animate = updateRoute, direction = 1 } = {}) {
   const pack = drawPackById.get(packId) || drawPackCatalog[0];
   activeDrawPackId = pack.id;
   if (!pack.offers.some((offer) => offer.id === activeDrawOfferId)) activeDrawOfferId = pack.offers[0].id;
-  drawCampaignTitle.textContent = `${pack.ip} · ${pack.name}`;
-  drawCampaignMeta.textContent = `全 ${pack.catalog.length} 款 · 每包随机 1 款`;
-  drawPackImage.src = pack.image;
-  drawPackImage.alt = pack.name;
-  document.querySelector("#drawPackAvailability").textContent = `本批剩余 ${pack.batchRemaining}/${pack.batchTotal} 包 · 更新 ${pack.updatedAt}`;
-  document.querySelector("#drawPackPrice").textContent = `¥${pack.unitPrice} / 包`;
+  const neighbors = neighboringDrawPacks(pack);
   const rareRate = pack.catalog.filter((prize) => prize.rarity === "稀有").reduce((sum, prize) => sum + prize.weight, 0);
-  drawStageFacts.innerHTML = `<span>全 ${pack.catalog.length} 款</span><span>稀有款 ${rareRate}%</span><span>每包独立随机</span>`;
-  drawPackStage.dataset.ipGlyph = pack.ip.slice(0, 1);
-  drawPackPicker.innerHTML = drawPackCatalog.map((item) => `<button type="button" data-pack-id="${item.id}" aria-pressed="${item.id === pack.id}"><img src="${item.image}" alt=""><span>${item.name}</span></button>`).join("");
+  applyDrawTheme(pack);
+  drawCampaignTitle.textContent = pack.name;
+  drawCampaignMeta.textContent = "每包随机 1 款";
+  drawThemeTitle.textContent = `${pack.themeName}主题`;
+  drawTopbarIp.textContent = `${pack.ip} · 切换卡包`;
+  drawVendorLine.textContent = "抽取后自动入柜";
+  drawActivePack.setAttribute("aria-label", `查看${pack.name}全部赏品`);
+  renderDrawPackShell(drawActivePack, pack);
+  document.querySelector("#drawPackPrice").textContent = `¥${pack.unitPrice} / 包`;
+  drawStageFacts.innerHTML = `<span>全 ${pack.catalog.length} 款</span><span>稀有款 ${rareRate}%</span><span id="drawPackAvailability" title="更新 ${pack.updatedAt}">本批剩余 ${pack.batchRemaining}/${pack.batchTotal} 包</span>`;
+  [[drawPreviousPack, neighbors.previous], [drawNextPack, neighbors.next]].forEach(([button, item]) => {
+    button.dataset.packId = item.id;
+    button.setAttribute("aria-label", `切换到${item.ip}，${item.name}`);
+    renderDrawPackShell(button, item);
+  });
+  drawCarouselIndicators.innerHTML = drawPackCatalog.map((item) => `<i class="${item.id === pack.id ? "is-active" : ""}"></i>`).join("");
   drawOfferList.innerHTML = pack.offers.map((offer) => {
     const available = offer.count <= pack.batchRemaining;
-    return `<label class="${offer.id === activeDrawOfferId ? "is-selected" : ""}${available ? "" : " is-disabled"}"><input type="radio" name="drawOffer" value="${offer.id}" ${offer.id === activeDrawOfferId ? "checked" : ""} ${available ? "" : "disabled"}><span><small>${available ? offer.badge : "库存不足"}</small><strong>${offer.label}</strong><b>¥${offer.price}</b></span></label>`;
+    const discount = offer.count * pack.unitPrice - offer.price;
+    const benefit = available ? (discount > 0 ? `省 ¥${formatMoney(discount)}` : `每包 ¥${formatMoney(pack.unitPrice)}`) : "库存不足";
+    const visibleLabel = offer.id === "box" ? `${offer.label} · ${offer.count}包` : offer.label;
+    return `<button type="button" data-draw-offer="${escapeHtml(offer.id)}" ${available ? "" : "disabled"} aria-label="${available ? `${escapeHtml(visibleLabel)}，${offer.price}元，进入支付确认` : `${escapeHtml(visibleLabel)}，库存不足`}"><small>${escapeHtml(benefit)}</small><strong>${escapeHtml(visibleLabel)}</strong><b>¥${formatMoney(offer.price)}</b></button>`;
   }).join("");
   updateDrawSelection();
+  resetDrawCarouselPosition();
+  if (animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    window.clearTimeout(drawPackTransitionTimer);
+    pageDraw.classList.remove("is-switching-left", "is-switching-right");
+    void pageDraw.offsetWidth;
+    pageDraw.classList.add(direction < 0 ? "is-switching-left" : "is-switching-right");
+    drawPackTransitionTimer = window.setTimeout(() => pageDraw.classList.remove("is-switching-left", "is-switching-right"), 280);
+  }
   if (updateRoute && parseAppRoute().page === "draw") window.history.replaceState(null, "", `#draw/${pack.id}`);
+}
+
+function selectDrawPack(packId, { direction = 1, announce = true } = {}) {
+  if (!drawPackById.has(packId) || packId === activeDrawPackId) return;
+  activeDrawOfferId = "one";
+  renderDrawPack(packId, { direction });
+  if (announce) showToast(`已切换到${currentDrawPack().name}`);
 }
 
 function createDrawOrder({ sourceType, sourceId, offerId, trigger }) {
@@ -1870,6 +1975,7 @@ function cancelDrawTransaction({ clearOrder = true } = {}) {
   drawPaymentTimer = null;
   drawOpeningTimer = null;
   drawPaymentPending = false;
+  drawPaymentCommitted = false;
   drawOpeningActive = false;
   if (clearOrder) pendingDraw = null;
 }
@@ -1928,21 +2034,109 @@ function renderResult(draw, prizes) {
   }
 }
 
+let drawPointerState = null;
+let drawSuppressClickUntil = 0;
+
 drawPackPicker.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-pack-id]");
+  if (performance.now() >= drawSuppressClickUntil) return;
+  drawSuppressClickUntil = 0;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}, true);
+
+drawPackPicker.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-pack-neighbor]");
   if (!button) return;
-  activeDrawOfferId = "one";
-  renderDrawPack(button.dataset.packId);
-  showToast(`已切换到${currentDrawPack().name}`);
+  event.preventDefault();
+  selectDrawPack(button.dataset.packId, { direction: button.dataset.packNeighbor === "previous" ? -1 : 1 });
+  resetDrawCarouselPosition({ focus: true });
 });
-drawOfferList.addEventListener("change", (event) => {
-  activeDrawOfferId = event.target.value;
-  drawOfferList.querySelectorAll("label").forEach((label) => label.classList.toggle("is-selected", label.contains(event.target)));
+
+drawPackPicker.addEventListener("keydown", (event) => {
+  if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+  event.preventDefault();
+  const direction = event.key === "ArrowLeft" ? -1 : 1;
+  const neighbor = direction < 0 ? drawPreviousPack : drawNextPack;
+  selectDrawPack(neighbor.dataset.packId, { direction });
+});
+
+drawPackPicker.addEventListener("pointerdown", (event) => {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+  drawPointerState = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, target: event.target };
+  try { drawPackPicker.setPointerCapture(event.pointerId); } catch { /* Browser may already own the pointer. */ }
+});
+
+drawPackPicker.addEventListener("pointermove", (event) => {
+  if (!drawPointerState || drawPointerState.pointerId !== event.pointerId) return;
+  const distanceX = event.clientX - drawPointerState.startX;
+  const distanceY = event.clientY - drawPointerState.startY;
+  if (Math.abs(distanceX) > Math.abs(distanceY) && Math.abs(distanceX) > 8) event.preventDefault();
+});
+
+function clearDrawPointer(pointerId) {
+  drawPointerState = null;
+  if (drawPackPicker.hasPointerCapture?.(pointerId)) {
+    try { drawPackPicker.releasePointerCapture(pointerId); } catch { /* Pointer was released by the browser. */ }
+  }
+}
+
+function finishDrawPointer(event, cancelled = false) {
+  if (!drawPointerState || drawPointerState.pointerId !== event.pointerId) return;
+  const pointerState = drawPointerState;
+  const distanceX = event.clientX - pointerState.startX;
+  const distanceY = event.clientY - pointerState.startY;
+  clearDrawPointer(event.pointerId);
+  if (cancelled) return;
+  if (Math.abs(distanceX) < 42 || Math.abs(distanceX) < Math.abs(distanceY)) {
+    const neighborButton = pointerState.target.closest?.("[data-pack-neighbor]");
+    const activeButton = pointerState.target.closest?.("[data-preview-card]");
+    if (neighborButton) {
+      drawSuppressClickUntil = performance.now() + 500;
+      selectDrawPack(neighborButton.dataset.packId, { direction: neighborButton.dataset.packNeighbor === "previous" ? -1 : 1 });
+      resetDrawCarouselPosition({ focus: true });
+    } else if (activeButton) {
+      drawSuppressClickUntil = performance.now() + 500;
+      openDrawInfo("catalog", activeButton);
+    }
+    return;
+  }
+  drawSuppressClickUntil = performance.now() + 500;
+  const direction = distanceX > 0 ? -1 : 1;
+  const neighbor = direction < 0 ? drawPreviousPack : drawNextPack;
+  selectDrawPack(neighbor.dataset.packId, { direction });
+  resetDrawCarouselPosition({ focus: true });
+}
+
+drawPackPicker.addEventListener("pointerup", (event) => finishDrawPointer(event));
+drawPackPicker.addEventListener("pointercancel", (event) => finishDrawPointer(event, true));
+drawPackPicker.addEventListener("lostpointercapture", (event) => {
+  if (drawPointerState?.pointerId === event.pointerId) drawPointerState = null;
+});
+drawPackPicker.addEventListener("dragstart", (event) => event.preventDefault());
+
+drawOfferList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-draw-offer]");
+  if (!button || button.disabled || drawPaymentPending || activeDialog) return;
+  activeDrawOfferId = button.dataset.drawOffer;
   updateDrawSelection();
+  openDrawConfirmation(createDrawOrder({ sourceType: "pack", sourceId: activeDrawPackId, offerId: activeDrawOfferId, trigger: button }));
 });
-document.querySelectorAll("[data-open-draw-confirm]").forEach((button) => button.addEventListener("click", (event) => {
-  openDrawConfirmation(createDrawOrder({ sourceType: "pack", sourceId: activeDrawPackId, offerId: activeDrawOfferId, trigger: event.currentTarget }));
-}));
+
+function handleDrawBack() {
+  if (activeDialog) {
+    closeDialog();
+    return;
+  }
+  if (drawEnteredInternally && drawReturnHash) {
+    drawEnteredInternally = false;
+    window.history.back();
+    return;
+  }
+  drawReturnHash = "";
+  window.location.hash = "home";
+}
+
+document.querySelector("[data-draw-back]").addEventListener("click", handleDrawBack);
 
 drawPayButton.addEventListener("click", (event) => {
   if (!pendingDraw || drawPaymentPending) return;
@@ -1962,24 +2156,33 @@ drawPayButton.addEventListener("click", (event) => {
   const button = event.currentTarget;
   const token = ++drawTransactionToken;
   drawPaymentPending = true;
+  drawPaymentCommitted = false;
   button.disabled = true;
   button.classList.add("is-paying");
-  button.textContent = `${paymentMethod}支付中…`;
+  button.textContent = `${paymentMethod}中…`;
   drawPaymentTimer = window.setTimeout(() => {
     if (token !== drawTransactionToken || !drawPaymentPending) return;
     const prizes = commitDraw(draw);
-    drawPaymentPending = false;
+    drawPaymentCommitted = true;
     button.classList.remove("is-paying");
-    button.disabled = false;
-    button.textContent = `${paymentMethod} ¥${formatMoney(draw.price)}`;
+    button.classList.add("is-paid");
+    button.textContent = "支付成功，正在开包";
     completedDrawAfterHistory = { draw, prizes };
-    if (drawConfirmHistoryOpen) window.history.back();
-    else {
-      closeDialog({ restoreFocus: false, force: true, updateHistory: false });
-      const completed = completedDrawAfterHistory;
-      completedDrawAfterHistory = null;
-      renderResult(completed.draw, completed.prizes);
-    }
+    drawPaymentTimer = window.setTimeout(() => {
+      if (token !== drawTransactionToken || !drawPaymentPending || !drawPaymentCommitted) return;
+      drawPaymentPending = false;
+      drawPaymentCommitted = false;
+      button.classList.remove("is-paid");
+      button.disabled = false;
+      button.textContent = `${paymentMethod} ¥${formatMoney(draw.price)}`;
+      if (drawConfirmHistoryOpen) window.history.back();
+      else {
+        closeDialog({ restoreFocus: false, force: true, updateHistory: false });
+        const completed = completedDrawAfterHistory;
+        completedDrawAfterHistory = null;
+        renderResult(completed.draw, completed.prizes);
+      }
+    }, 420);
   }, 680);
 });
 
@@ -2065,6 +2268,7 @@ function openAccountView(view, filter = "", trigger = document.activeElement) {
   accountSheetTitle.textContent = filter || titles[view] || "个人中心";
   updateAccountSheetCloseLabel();
   accountSheet.classList.toggle("is-address-view", view === "address");
+  accountSheet.classList.remove("is-draw-pack-menu");
   if (view === "address") {
     pendingAccountAddressId = activeAddressId;
     renderAccountAddresses();
@@ -2084,6 +2288,14 @@ function openAccountView(view, filter = "", trigger = document.activeElement) {
 }
 
 accountSheetList.addEventListener("click", (event) => {
+  const packButton = event.target.closest("[data-select-draw-pack]");
+  if (packButton) {
+    const nextPackId = packButton.dataset.selectDrawPack;
+    closeDialog({ restoreFocus: false, force: true });
+    selectDrawPack(nextPackId, { direction: drawPackCatalog.findIndex((pack) => pack.id === nextPackId) >= drawPackCatalog.findIndex((pack) => pack.id === activeDrawPackId) ? 1 : -1 });
+    resetDrawCarouselPosition({ focus: true });
+    return;
+  }
   if (event.target.closest("[data-add-account-address]")) {
     renderAddressForm();
     return;
@@ -2149,8 +2361,21 @@ accountSheetList.addEventListener("submit", (event) => {
   showToast("新地址已保存并使用");
 });
 
+function openDrawPackMenu(trigger) {
+  accountSheetTitle.textContent = "切换卡包";
+  updateAccountSheetCloseLabel();
+  accountSheet.classList.remove("is-address-view");
+  accountSheet.classList.add("is-draw-pack-menu");
+  accountSheetList.innerHTML = drawPackCatalog.map((pack) => `<button type="button" class="draw-pack-menu-item${pack.id === activeDrawPackId ? " is-current" : ""}" data-select-draw-pack="${escapeHtml(pack.id)}" ${pack.id === activeDrawPackId ? 'aria-current="true"' : ""}>
+    <span><small>${escapeHtml(pack.ip)}</small><strong>${escapeHtml(pack.name)}</strong></span><em>剩余 ${pack.batchRemaining}/${pack.batchTotal} 包</em>
+  </button>`).join("");
+  openDialog(accountSheet, trigger);
+}
+
 function openDrawInfo(view, trigger) {
   const pack = currentDrawPack();
+  const threeOffer = pack.offers.find((offer) => offer.id === "three");
+  const boxOffer = pack.offers.find((offer) => offer.id === "box");
   const configurations = {
     probability: {
       title: `${pack.name} · 概率公示`,
@@ -2162,11 +2387,11 @@ function openDrawInfo(view, trigger) {
     },
     details: {
       title: `${pack.name} · 商品详情`,
-      rows: [["正版授权卡包", pack.ip, `全系列 ${pack.catalog.length} 款，单包随机 1 款`], ["发货说明", "现货", "预计 3–5 个工作日发出"], ["售后规则", "破损补寄", "抽取结果生成后不支持无理由取消"]],
+      rows: [["正版授权卡包", pack.ip, `全系列 ${pack.catalog.length} 款，单包随机 1 款`], [pack.saleState, pack.batch, pack.fulfillment], ["售后规则", "破损补寄", "抽取结果生成后不支持无理由取消"]],
     },
     benefits: {
       title: "当前可用福利",
-      rows: [["整盒组合优惠", "立减 ¥4", "6 包原价 ¥120，组合价 ¥116"], ["多包优惠", "立减 ¥2", "3 包原价 ¥60，组合价 ¥58"], ["满额包邮", "满 ¥99", "同一订单现货商品可合并发货"]],
+      rows: [["整盒组合优惠", `立减 ¥${formatMoney(boxOffer.count * pack.unitPrice - boxOffer.price)}`, `${boxOffer.count} 包原价 ¥${formatMoney(boxOffer.count * pack.unitPrice)}，组合价 ¥${formatMoney(boxOffer.price)}`], ["多包优惠", `立减 ¥${formatMoney(threeOffer.count * pack.unitPrice - threeOffer.price)}`, `${threeOffer.count} 包原价 ¥${formatMoney(threeOffer.count * pack.unitPrice)}，组合价 ¥${formatMoney(threeOffer.price)}`], [pack.saleState, pack.batch, pack.fulfillment]],
     },
     collection: {
       title: `${pack.name} · 系列图鉴`,
@@ -2180,9 +2405,20 @@ function openDrawInfo(view, trigger) {
 }
 
 document.querySelectorAll("[data-draw-info]").forEach((button) => button.addEventListener("click", () => openDrawInfo(button.dataset.drawInfo, button)));
+document.querySelector("[data-draw-pack-menu]").addEventListener("click", (event) => openDrawPackMenu(event.currentTarget));
 document.querySelector("[data-preview-card]").addEventListener("click", (event) => openDrawInfo("catalog", event.currentTarget));
 document.querySelector("[data-draw-share]").addEventListener("click", async () => {
   const shareUrl = `${window.location.href.split("#")[0]}#draw/${activeDrawPackId}`;
+  const pack = currentDrawPack();
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: `${pack.ip} · ${pack.name}`, text: `一起开启${pack.name}`, url: shareUrl });
+      showToast("分享面板已打开");
+      return;
+    }
+  } catch (error) {
+    if (error?.name === "AbortError") return;
+  }
   try {
     await navigator.clipboard.writeText(shareUrl);
     showToast("卡包链接已复制");
@@ -2254,6 +2490,18 @@ window.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && activeDialog) {
     event.preventDefault();
     closeDialog();
+    return;
+  }
+  if (event.key === "Escape" && currentPage === "draw") {
+    event.preventDefault();
+    handleDrawBack();
+    return;
+  }
+  if (!event.defaultPrevented && !activeDialog && currentPage === "draw" && (event.key === "ArrowLeft" || event.key === "ArrowRight") && !event.target.closest("input, textarea, select")) {
+    event.preventDefault();
+    const direction = event.key === "ArrowLeft" ? -1 : 1;
+    const neighbor = direction < 0 ? drawPreviousPack : drawNextPack;
+    selectDrawPack(neighbor.dataset.packId, { direction });
     return;
   }
   if (event.key !== "Tab" || !activeDialog) return;
