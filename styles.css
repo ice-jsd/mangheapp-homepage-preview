@@ -1768,8 +1768,33 @@ button:disabled {
 .account-address-copy small { color: #5f667d; font-size: 10px; line-height: 1.45; }
 .account-address-tag { padding: 5px 7px; border-radius: 999px; color: #6b6578; background: #f1edf7; font-size: 9px; white-space: nowrap; }
 .account-address-card.is-selected .account-address-tag { color: #a93425; background: #ffe4d7; }
+.account-address-add { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px dashed #c7bfd4; border-radius: 14px; color: #5147ce; background: rgba(255,255,255,.62); font-size: 11px; font-weight: 700; cursor: pointer; }
+.account-address-add span { color: inherit; font-size: 16px; line-height: 1; }
 .account-address-confirm { width: 100%; min-height: 48px; margin-top: 3px; border: 0; border-radius: 15px; color: #fff; background: #cf432f; box-shadow: 0 6px 14px rgba(207,67,47,.18); font-size: 12px; font-weight: 800; cursor: pointer; }
 .account-address-hint { margin: 1px 4px 0; color: #696579; font-size: 9px; line-height: 1.45; text-align: center; }
+.account-sheet.is-address-form { max-height: calc(100% - 24px); display: flex; flex-direction: column; }
+.account-sheet.is-address-form .account-sheet-list { min-height: 0; max-height: 540px; }
+.account-address-form { display: flex; flex-direction: column; gap: 12px; }
+.account-address-form-row { display: grid; grid-template-columns: .82fr 1.18fr; gap: 9px; }
+.account-address-form > label,
+.account-address-form-row > label { min-width: 0; display: flex; flex-direction: column; gap: 6px; color: #5f667d; font-size: 10px; }
+.account-address-form input[type="text"],
+.account-address-form input[type="tel"],
+.account-address-form select { width: 100%; height: 44px; padding: 0 12px; border: 1px solid #ddd8e4; border-radius: 13px; outline: 0; color: var(--ink); background: #fff; font: inherit; font-size: 11px; }
+.account-address-form input:focus,
+.account-address-form select:focus { border-color: #ff6a50; box-shadow: 0 0 0 2px rgba(255,102,74,.1); }
+.account-address-form fieldset { margin: 0; padding: 0; border: 0; }
+.account-address-form legend { margin-bottom: 7px; color: #5f667d; font-size: 10px; }
+.account-address-labels { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.account-address-labels label { position: relative; cursor: pointer; }
+.account-address-labels input { position: absolute; opacity: 0; pointer-events: none; }
+.account-address-labels span { height: 38px; display: grid; place-items: center; border: 1px solid #ddd8e4; border-radius: 12px; color: #5f667d; background: #fff; font-size: 10px; }
+.account-address-labels input:checked + span { border-color: #ff6a50; color: #a93425; background: #fff0e8; box-shadow: 0 0 0 2px rgba(255,102,74,.08); }
+.account-address-default { min-height: 38px; flex-direction: row !important; align-items: center; gap: 8px !important; color: var(--ink) !important; cursor: pointer; }
+.account-address-default input { width: 18px; height: 18px; accent-color: #cf432f; }
+.account-address-form-actions { display: grid; grid-template-columns: .8fr 1.2fr; gap: 9px; }
+.account-address-form-actions button { min-height: 48px; border: 1px solid #d7d1df; border-radius: 14px; color: #514d5e; background: #fff; font-size: 11px; font-weight: 800; cursor: pointer; }
+.account-address-form-actions button:last-child { border-color: #cf432f; color: #fff; background: #cf432f; box-shadow: 0 6px 14px rgba(207,67,47,.18); }
 .pool-grid.is-single { grid-template-columns: minmax(0, 175px); justify-content: center; }
 
 /* Product detail, SKU selection and complete checkout */

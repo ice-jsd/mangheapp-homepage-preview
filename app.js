@@ -586,11 +586,28 @@ let currentProduct = null;
 let currentSku = null;
 let skuQuantity = 1;
 let skuMode = "cart";
-const deliveryAddresses = [
+const defaultDeliveryAddresses = [
   { id: "xuhui", label: "家", name: "谷多多用户", phone: "138****8266", district: "上海市徐汇区", address: "上海市徐汇区漕溪北路 88 号", isDefault: true },
   { id: "pudong", label: "公司", name: "谷多多用户", phone: "138****8266", district: "上海市浦东新区", address: "上海市浦东新区张江路 66 号", isDefault: false },
 ];
-let activeAddressId = "xuhui";
+const addressStorageKey = "guji-address-book-v1";
+
+function readStoredAddressBook() {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(addressStorageKey) || "null");
+    if (!stored || !Array.isArray(stored.addresses)) return null;
+    const addresses = stored.addresses.filter((address) => address?.id && address?.name && address?.phone && address?.district && address?.address);
+    if (!addresses.length) return null;
+    const activeId = addresses.some((address) => address.id === stored.activeAddressId) ? stored.activeAddressId : addresses[0].id;
+    return { addresses, activeAddressId: activeId };
+  } catch {
+    return null;
+  }
+}
+
+const storedAddressBook = readStoredAddressBook();
+const deliveryAddresses = storedAddressBook?.addresses || defaultDeliveryAddresses.map((address) => ({ ...address }));
+let activeAddressId = storedAddressBook?.activeAddressId || deliveryAddresses[0].id;
 let pendingAccountAddressId = activeAddressId;
 let checkoutContext = { mode: "cart", items: [], subtotal: 0, discount: 0, total: 0 };
 let activeCartFilter = "全部";
@@ -602,6 +619,22 @@ function activeDeliveryAddress() {
   return deliveryAddresses.find((address) => address.id === activeAddressId) || deliveryAddresses[0];
 }
 
+function persistAddressBook() {
+  try {
+    window.localStorage.setItem(addressStorageKey, JSON.stringify({ addresses: deliveryAddresses, activeAddressId }));
+  } catch {
+    // The address still works for the current session when storage is unavailable.
+  }
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+}
+
+function renderCheckoutAddressOptions() {
+  checkoutAddressOptions.innerHTML = deliveryAddresses.map((address) => `<label><input type="radio" name="checkoutAddress" value="${escapeHtml(address.id)}" ${address.id === activeAddressId ? "checked" : ""} /><span>${address.isDefault ? "<b>默认</b> " : ""}${escapeHtml(address.address)}</span></label>`).join("");
+}
+
 function syncDeliveryAddress() {
   const address = activeDeliveryAddress();
   const defaultCopy = address.isDefault ? " · 默认地址" : "";
@@ -609,6 +642,7 @@ function syncDeliveryAddress() {
   skuAddressText.textContent = `${address.district}${defaultCopy}`;
   checkoutAddressName.textContent = `${address.name} ${address.phone}`;
   checkoutAddressText.textContent = `${address.address}${defaultCopy}`;
+  renderCheckoutAddressOptions();
   checkoutAddressOptions.querySelectorAll("input[name='checkoutAddress']").forEach((input) => {
     input.checked = input.value === address.id;
   });
@@ -619,8 +653,11 @@ function useDeliveryAddress(addressId, announce = true) {
   if (!address) return;
   activeAddressId = address.id;
   syncDeliveryAddress();
+  persistAddressBook();
   if (announce) showToast(`已使用${address.label}地址`);
 }
+
+syncDeliveryAddress();
 
 function formatMoney(value) {
   return Number(value.toFixed(2)).toString();
@@ -1353,20 +1390,45 @@ const accountContent = {
 };
 
 function renderAccountAddresses() {
+  accountSheetTitle.textContent = "收货地址";
+  accountSheet.classList.remove("is-address-form");
   accountSheetList.innerHTML = `
     <div class="account-address-list" role="radiogroup" aria-label="选择收货地址">
       ${deliveryAddresses.map((address) => {
         const selected = address.id === pendingAccountAddressId;
-        const stateLabel = selected ? (address.id === activeAddressId ? "当前使用" : "已选择") : address.label;
-        return `<button class="account-address-card${selected ? " is-selected" : ""}" type="button" role="radio" aria-checked="${selected}" data-account-address="${address.id}">
+        const stateLabel = selected
+          ? address.id === activeAddressId
+            ? address.isDefault ? "当前·默认" : "当前使用"
+            : "已选择"
+          : address.isDefault ? "默认" : address.label;
+        return `<button class="account-address-card${selected ? " is-selected" : ""}" type="button" role="radio" aria-checked="${selected}" data-account-address="${escapeHtml(address.id)}">
           <i class="account-address-check" aria-hidden="true">✓</i>
-          <span class="account-address-copy"><strong>${address.name}<em>${address.phone}</em></strong><small>${address.address}</small></span>
-          <b class="account-address-tag">${stateLabel}</b>
+          <span class="account-address-copy"><strong>${escapeHtml(address.name)}<em>${escapeHtml(address.phone)}</em></strong><small>${escapeHtml(address.address)}</small></span>
+          <b class="account-address-tag">${escapeHtml(stateLabel)}</b>
         </button>`;
       }).join("")}
     </div>
+    <button class="account-address-add" type="button" data-add-account-address><span aria-hidden="true">＋</span>新增收货地址</button>
     <button class="account-address-confirm" type="button" data-confirm-account-address>使用该地址</button>
     <p class="account-address-hint">确认后将同步到商品配送信息和结算订单。</p>`;
+}
+
+function renderAddressForm() {
+  accountSheetTitle.textContent = "新增收货地址";
+  accountSheet.classList.add("is-address-form");
+  accountSheetList.innerHTML = `
+    <form class="account-address-form" data-account-address-form novalidate>
+      <div class="account-address-form-row">
+        <label><span>收货人</span><input name="recipient" type="text" maxlength="12" autocomplete="name" placeholder="请输入姓名" /></label>
+        <label><span>手机号码</span><input name="phone" type="tel" inputmode="numeric" maxlength="11" autocomplete="tel" placeholder="11 位手机号" /></label>
+      </div>
+      <label><span>所在地区</span><select name="district"><option value="上海市徐汇区">上海市徐汇区</option><option value="上海市浦东新区">上海市浦东新区</option><option value="上海市静安区">上海市静安区</option><option value="上海市长宁区">上海市长宁区</option></select></label>
+      <label><span>详细地址</span><input name="detail" type="text" maxlength="40" autocomplete="street-address" placeholder="街道、门牌号、小区及楼栋" /></label>
+      <fieldset><legend>地址标签</legend><div class="account-address-labels"><label><input type="radio" name="label" value="家" checked /><span>家</span></label><label><input type="radio" name="label" value="公司" /><span>公司</span></label><label><input type="radio" name="label" value="学校" /><span>学校</span></label></div></fieldset>
+      <label class="account-address-default"><input name="isDefault" type="checkbox" /><span>设为默认收货地址</span></label>
+      <div class="account-address-form-actions"><button type="button" data-cancel-account-address>取消</button><button type="submit">保存并使用</button></div>
+    </form>`;
+  window.requestAnimationFrame(() => accountSheetList.querySelector("input[name='recipient']")?.focus());
 }
 
 function openAccountView(view, filter = "", trigger = document.activeElement) {
@@ -1392,6 +1454,16 @@ function openAccountView(view, filter = "", trigger = document.activeElement) {
 }
 
 accountSheetList.addEventListener("click", (event) => {
+  if (event.target.closest("[data-add-account-address]")) {
+    renderAddressForm();
+    return;
+  }
+  if (event.target.closest("[data-cancel-account-address]")) {
+    pendingAccountAddressId = activeAddressId;
+    renderAccountAddresses();
+    accountSheetList.querySelector("[data-add-account-address]")?.focus();
+    return;
+  }
   const addressButton = event.target.closest("[data-account-address]");
   if (addressButton) {
     pendingAccountAddressId = addressButton.dataset.accountAddress;
@@ -1405,6 +1477,46 @@ accountSheetList.addEventListener("click", (event) => {
     closeDialog();
     showToast(`已使用${address.label}地址，配送信息已更新`);
   }
+});
+
+accountSheetList.addEventListener("submit", (event) => {
+  const form = event.target.closest("[data-account-address-form]");
+  if (!form) return;
+  event.preventDefault();
+  const formData = new FormData(form);
+  const name = String(formData.get("recipient") || "").trim();
+  const phone = String(formData.get("phone") || "").replace(/\D/g, "");
+  const district = String(formData.get("district") || "").trim();
+  const detail = String(formData.get("detail") || "").trim();
+  const label = String(formData.get("label") || "家");
+  const isDefault = formData.get("isDefault") === "on";
+  if (!name) {
+    form.elements.recipient.focus();
+    return showToast("请填写收货人姓名");
+  }
+  if (!/^1\d{10}$/.test(phone)) {
+    form.elements.phone.focus();
+    return showToast("请输入正确的 11 位手机号");
+  }
+  if (detail.length < 4) {
+    form.elements.detail.focus();
+    return showToast("请填写完整的详细地址");
+  }
+  if (isDefault) deliveryAddresses.forEach((address) => (address.isDefault = false));
+  const address = {
+    id: `custom-${Date.now().toString(36)}`,
+    label,
+    name,
+    phone: `${phone.slice(0, 3)}****${phone.slice(-4)}`,
+    district,
+    address: `${district}${detail}`,
+    isDefault,
+  };
+  deliveryAddresses.push(address);
+  pendingAccountAddressId = address.id;
+  useDeliveryAddress(address.id, false);
+  closeDialog();
+  showToast("新地址已保存并使用");
 });
 
 function openDrawInfo(view, trigger) {
