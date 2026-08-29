@@ -529,6 +529,53 @@
           </div>
         </section>
 
+        <section class="pool-detail-view" id="poolDetailView" aria-labelledby="poolDetailTitle" hidden>
+          <header class="pool-detail-header">
+            <button type="button" data-close-pool-detail aria-label="返回赏池列表"><img src="./assets/icon-back.svg" alt="" /></button>
+            <strong>赏池详情</strong>
+            <button type="button" data-pool-share aria-label="分享赏池"><img src="./assets/icon-share.svg" alt="" /></button>
+          </header>
+          <div class="pool-detail-scroll" id="poolDetailScroll">
+            <section class="pool-detail-hero" aria-label="赏池信息">
+              <div class="pool-detail-hero-copy">
+                <div><span id="poolDetailType">一番赏</span><em>正版授权</em></div>
+                <small id="poolDetailIp">鬼灭之刃</small>
+                <h1 id="poolDetailTitle">鬼灭之刃 · 柱集合赏</h1>
+                <p id="poolDetailMeta">剩余 42 份 · 286 人参与</p>
+                <footer><b>进行中</b><span>每抽必得 · 支付后即时开奖</span></footer>
+              </div>
+              <figure><img id="poolDetailImage" src="./assets/quick-pool.png" alt="柱集合赏奖品" /></figure>
+            </section>
+
+            <section class="pool-detail-overview" aria-label="赏池概况">
+              <div><span>单抽价</span><strong id="poolDetailPrice">¥39</strong></div>
+              <div><span>稀有款概率</span><strong id="poolRareRate">8%</strong></div>
+              <div><span>发货方式</span><strong>赏品柜合并发货</strong></div>
+            </section>
+
+            <section class="pool-detail-stock" aria-label="赏池剩余进度">
+              <div><span><b>本池剩余</b><small>库存支付成功后实时扣减</small></span><strong id="poolStockCopy">42 / 96 份</strong></div>
+              <i><b id="poolStockProgress"></b></i>
+            </section>
+
+            <section class="pool-detail-prizes" aria-labelledby="poolPrizeTitle">
+              <header><div><span>赏品阵容</span><h2 id="poolPrizeTitle">本池赏品</h2></div><button type="button" data-toast="概率已按当前剩余库存实时公示">概率说明</button></header>
+              <div class="pool-detail-prize-list">
+                <article data-pool-prize><b>A赏</b><img src="./assets/product-03.png" alt="" /><span><strong>限定亚克力摆件</strong><small>剩余 2 件</small></span><em>8%</em></article>
+                <article data-pool-prize><b>B赏</b><img src="./assets/product-01.png" alt="" /><span><strong>角色徽章套组</strong><small>剩余 12 件</small></span><em>22%</em></article>
+                <article data-pool-prize><b>C赏</b><img src="./assets/product-04.png" alt="" /><span><strong>主题收藏卡</strong><small>剩余 28 件</small></span><em>70%</em></article>
+              </div>
+            </section>
+
+            <section class="pool-detail-notice"><div><span>参与须知</span><h2>抽取前请确认</h2></div><p>抽取结果生成后不可无理由取消；赏品将暂存赏品柜，可达到包邮条件后申请合并发货。</p><div><span>✓ 正版授权</span><span>✓ 每抽必得</span><span>✓ 破损补寄</span></div></section>
+          </div>
+          <footer class="pool-detail-purchase-bar">
+            <button type="button" data-toast="抽取结果将自动存入“我的赏品”"><span>?</span>规则</button>
+            <div><span>单抽</span><strong id="poolActionPrice">¥39</strong><small>每抽必得</small></div>
+            <button type="button" data-enter-pool>立即参与</button>
+          </footer>
+        </section>
+
         <section class="product-detail-view" id="productDetailView" aria-labelledby="productDetailTitle" hidden>
           <header class="product-detail-header">
             <button type="button" data-close-product-detail aria-label="返回上一页"><img src="./assets/icon-back.svg" alt="" /></button>
@@ -600,27 +647,6 @@
 
         <section class="bottom-sheet order-success-sheet" id="orderSuccessSheet" role="dialog" aria-modal="true" aria-labelledby="orderSuccessTitle" hidden>
           <div class="order-success-mark" aria-hidden="true">✓</div><span class="sheet-kicker">订单状态</span><h2 id="orderSuccessTitle">支付成功</h2><p id="orderSuccessMeta">订单号 GDD20260828001 · 实付 ¥0</p><div class="order-success-note">订单已进入待发货，发货后可在“我的订单”查看物流进度。</div><div class="order-success-actions"><button type="button" data-order-back-home>返回首页</button><button type="button" data-order-view>查看订单</button></div>
-        </section>
-
-        <section class="bottom-sheet pool-sheet" id="poolSheet" role="dialog" aria-modal="true" aria-labelledby="poolSheetTitle" hidden>
-          <button class="sheet-close" type="button" data-close-sheet aria-label="关闭赏池详情">×</button>
-          <span class="sheet-kicker">赏池详情</span><h2 id="poolSheetTitle">鬼灭之刃 · 柱集合赏</h2><p id="poolSheetMeta">剩余 42 份 · 286 人参与</p>
-          <div class="pool-sheet-scroll">
-            <section class="pool-overview" aria-label="赏池概况">
-              <div><span>单抽价</span><strong id="poolSheetPrice">¥39</strong></div>
-              <div><span>稀有款概率</span><strong>8%</strong></div>
-              <div><span>发货方式</span><strong>赏品柜合并发货</strong></div>
-            </section>
-            <section class="pool-stock" aria-label="赏池剩余进度"><div><strong>本池剩余</strong><span id="poolStockCopy">42 / 96 份</span></div><i><b id="poolStockProgress"></b></i><p>每抽必得 1 件赏品；库存实时扣减，以支付成功为准。</p></section>
-            <section class="pool-prize-list" aria-labelledby="poolPrizeTitle">
-              <div><h3 id="poolPrizeTitle">赏品与概率</h3><button type="button" data-toast="概率已按当前剩余库存实时公示">概率说明</button></div>
-              <article><b>A赏</b><span><strong>限定亚克力摆件</strong><small>剩余 2 件</small></span><em>8%</em></article>
-              <article><b>B赏</b><span><strong>角色徽章套组</strong><small>剩余 12 件</small></span><em>22%</em></article>
-              <article><b>C赏</b><span><strong>主题收藏卡</strong><small>剩余 28 件</small></span><em>70%</em></article>
-            </section>
-            <section class="pool-notice"><strong>抽取须知</strong><p>抽取结果生成后不可无理由取消；赏品可暂存赏品柜，达到包邮条件后申请合并发货。</p><div><span>✓ 正版授权</span><span>✓ 每抽必得</span><span>✓ 破损补寄</span></div></section>
-          </div>
-          <div class="pool-sheet-action"><span>应付 <strong id="poolActionPrice">¥39</strong><small>1 抽 · 每抽必得</small></span><button class="confirm-pay" type="button" data-enter-pool>立即参与</button></div>
         </section>
 
         <section class="bottom-sheet draw-confirm-sheet" id="drawConfirmSheet" role="dialog" aria-modal="true" aria-labelledby="drawConfirmTitle" hidden>

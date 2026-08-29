@@ -17,6 +17,7 @@ function showToast(message) {
 
 function closeTransientUi() {
   if (activeDialog) closeDialog({ restoreFocus: false });
+  if (poolDetailOpen) closePoolDetail({ restoreFocus: false, updateHistory: false });
   if (productDetailOpen) {
     productReturnSearch = "";
     closeProductDetail({ restoreFocus: false, updateHistory: false });
@@ -355,16 +356,17 @@ document.querySelectorAll("[data-pool-sort]").forEach((button) => {
 /* Dialog controller */
 const searchOverlay = document.querySelector("#searchOverlay");
 const sheetBackdrop = document.querySelector("#sheetBackdrop");
+const poolDetailView = document.querySelector("#poolDetailView");
 const productDetailView = document.querySelector("#productDetailView");
 const skuSheet = document.querySelector("#skuSheet");
 const checkoutSheet = document.querySelector("#checkoutSheet");
 const orderSuccessSheet = document.querySelector("#orderSuccessSheet");
-const poolSheet = document.querySelector("#poolSheet");
 const drawConfirmSheet = document.querySelector("#drawConfirmSheet");
 const accountSheet = document.querySelector("#accountSheet");
 const drawResult = document.querySelector("#drawResult");
 let activeDialog = null;
 let lastDialogTrigger = null;
+let poolDetailOpen = false;
 let productDetailOpen = false;
 
 function focusableWithin(element) {
@@ -374,9 +376,10 @@ function focusableWithin(element) {
 }
 
 function setAppBackgroundInert(value) {
-  scrollView.inert = value || productDetailOpen;
-  bottomNav.inert = value || productDetailOpen;
-  productDetailView.inert = value;
+  scrollView.inert = value || poolDetailOpen || productDetailOpen;
+  bottomNav.inert = value || poolDetailOpen || productDetailOpen;
+  poolDetailView.inert = value || productDetailOpen;
+  productDetailView.inert = value || poolDetailOpen;
 }
 
 function openDialog(dialog, trigger = document.activeElement) {
@@ -751,8 +754,7 @@ function openProductDetail(product, trigger = product.card, options = {}) {
   renderProductDetail(product);
   productDetailOpen = true;
   productDetailView.hidden = false;
-  scrollView.inert = true;
-  bottomNav.inert = true;
+  setAppBackgroundInert(false);
   productDetailScroll.scrollTop = 0;
   window.requestAnimationFrame(() => {
     productDetailView.classList.add("is-open");
@@ -772,8 +774,7 @@ function closeProductDetail({ restoreFocus = true, updateHistory = true } = {}) 
   productDetailView.classList.remove("is-open");
   productDetailView.hidden = true;
   productDetailView.inert = false;
-  scrollView.inert = false;
-  bottomNav.inert = false;
+  setAppBackgroundInert(false);
   if (!updateHistory && window.history.state?.productDetail) window.history.replaceState(null, "", window.location.href);
   if (productReturnSearch) {
     const query = productReturnSearch;
@@ -1179,29 +1180,97 @@ cartManageButton.addEventListener("click", () => {
 });
 
 /* Pool detail */
-const poolSheetTitle = document.querySelector("#poolSheetTitle");
-const poolSheetMeta = document.querySelector("#poolSheetMeta");
-const poolSheetPrice = document.querySelector("#poolSheetPrice");
+const poolDetailScroll = document.querySelector("#poolDetailScroll");
+const poolDetailTitle = document.querySelector("#poolDetailTitle");
+const poolDetailMeta = document.querySelector("#poolDetailMeta");
+const poolDetailType = document.querySelector("#poolDetailType");
+const poolDetailIp = document.querySelector("#poolDetailIp");
+const poolDetailImage = document.querySelector("#poolDetailImage");
+const poolDetailPrice = document.querySelector("#poolDetailPrice");
+const poolRareRate = document.querySelector("#poolRareRate");
 const poolActionPrice = document.querySelector("#poolActionPrice");
 const poolStockCopy = document.querySelector("#poolStockCopy");
 const poolStockProgress = document.querySelector("#poolStockProgress");
+const poolPrizeRows = [...document.querySelectorAll("[data-pool-prize]")];
 const enterPoolButton = document.querySelector("[data-enter-pool]");
 let currentPool = null;
+let lastPoolTrigger = null;
 
-function openPool(pool, trigger = pool) {
+function renderPoolDetail(pool) {
   currentPool = pool;
   const remaining = Number(pool.dataset.remaining || 0);
   const total = Math.max(remaining, pool.dataset.poolDestination === "draw" ? 64 : 96);
   const price = pool.dataset.poolDestination === "draw" ? 20 : 39;
-  poolSheetTitle.textContent = pool.dataset.pool;
-  poolSheetMeta.textContent = `剩余 ${remaining} 份 · ${pool.dataset.popularity} 人参与 · ${pool.dataset.poolType}`;
-  poolSheetPrice.textContent = `¥${price}`;
+  const image = pool.querySelector("img")?.getAttribute("src") || "./assets/quick-pool.png";
+  const catalog = poolPrizeCatalog[pool.dataset.poolIp] || poolPrizeCatalog.default;
+  const probabilities = [8, 22, 70];
+  const topPrizeCount = Math.min(remaining, Math.max(1, Math.round(remaining * .08)));
+  const middlePrizeCount = Math.min(remaining - topPrizeCount, Math.max(0, Math.round(remaining * .22)));
+  const prizeCounts = [topPrizeCount, middlePrizeCount, Math.max(0, remaining - topPrizeCount - middlePrizeCount)];
+  poolDetailTitle.textContent = pool.dataset.pool;
+  poolDetailMeta.textContent = `剩余 ${remaining} 份 · ${pool.dataset.popularity} 人参与`;
+  poolDetailType.textContent = pool.dataset.poolType;
+  poolDetailIp.textContent = `${pool.dataset.poolIp} · 官方授权`;
+  poolDetailImage.src = image;
+  poolDetailImage.alt = `${pool.dataset.pool}赏品预览`;
+  poolDetailPrice.textContent = `¥${price}`;
+  poolRareRate.textContent = `${probabilities[0]}%`;
   poolActionPrice.textContent = `¥${price}`;
   poolStockCopy.textContent = `${remaining} / ${total} 份`;
   poolStockProgress.style.width = `${Math.max(6, Math.min(100, (remaining / total) * 100))}%`;
+  poolPrizeRows.forEach((row, index) => {
+    const prize = catalog[index % catalog.length];
+    row.querySelector("img").src = prize.image;
+    row.querySelector("img").alt = prize.name;
+    row.querySelector("strong").textContent = prize.name;
+    row.querySelector("small").textContent = `剩余 ${prizeCounts[index]} 件`;
+    row.querySelector("em").textContent = `${probabilities[index]}%`;
+  });
   enterPoolButton.textContent = pool.dataset.poolDestination === "draw" ? "进入抽卡机" : "立即参与";
-  openDialog(poolSheet, trigger);
 }
+
+function openPool(pool, trigger = pool, options = {}) {
+  lastPoolTrigger = trigger instanceof HTMLElement ? trigger : pool;
+  renderPoolDetail(pool);
+  poolDetailOpen = true;
+  poolDetailView.hidden = false;
+  poolDetailScroll.scrollTop = 0;
+  setAppBackgroundInert(false);
+  document.title = `谷多多 · ${pool.dataset.pool}`;
+  window.requestAnimationFrame(() => {
+    poolDetailView.classList.add("is-open");
+    poolDetailView.querySelector("[data-close-pool-detail]")?.focus();
+  });
+  if (options.pushHistory !== false) window.history.pushState({ poolDetail: pool.dataset.pool }, "", window.location.href);
+}
+
+function closePoolDetail({ restoreFocus = true, updateHistory = true } = {}) {
+  if (!poolDetailOpen) return;
+  if (activeDialog) closeDialog({ restoreFocus: false });
+  if (updateHistory && window.history.state?.poolDetail) {
+    window.history.back();
+    return;
+  }
+  poolDetailOpen = false;
+  poolDetailView.classList.remove("is-open");
+  poolDetailView.hidden = true;
+  poolDetailView.inert = false;
+  setAppBackgroundInert(false);
+  document.title = `谷多多 · ${pageNames[currentPage]}`;
+  if (!updateHistory && window.history.state?.poolDetail) window.history.replaceState(null, "", window.location.href);
+  if (restoreFocus && lastPoolTrigger?.isConnected) lastPoolTrigger.focus();
+  lastPoolTrigger = null;
+}
+
+document.querySelector("[data-close-pool-detail]").addEventListener("click", () => closePoolDetail());
+document.querySelector("[data-pool-share]").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(`${currentPool.dataset.pool} · ${poolDetailMeta.textContent}`);
+    showToast("赏池信息已复制");
+  } catch {
+    showToast("当前环境无法复制，请稍后再试");
+  }
+});
 
 document.querySelectorAll("[data-pool]").forEach((pool) => {
   pool.addEventListener("click", () => openPool(pool));
@@ -1214,8 +1283,8 @@ document.querySelectorAll("[data-pool]").forEach((pool) => {
 });
 enterPoolButton.addEventListener("click", () => {
   const destination = currentPool?.dataset.poolDestination;
-  closeDialog({ restoreFocus: false });
   if (destination === "draw") {
+    closePoolDetail({ restoreFocus: false, updateHistory: false });
     navigate("draw");
     return;
   }
@@ -1228,7 +1297,7 @@ enterPoolButton.addEventListener("click", () => {
     price,
     subtotal: price,
     discount: 0,
-    trigger: currentPool,
+    trigger: enterPoolButton,
     sourceName: name,
     sourceIp: ip,
     sourceImage: currentPool?.querySelector("img")?.getAttribute("src") || "./assets/quick-pool.png",
@@ -1589,8 +1658,17 @@ document.querySelectorAll(".reveal").forEach((section) => revealObserver.observe
 
 window.addEventListener("hashchange", () => routeFromHash());
 window.addEventListener("popstate", (event) => {
+  if (poolDetailOpen) {
+    closePoolDetail({ updateHistory: false });
+    return;
+  }
   if (productDetailOpen) {
     closeProductDetail({ updateHistory: false });
+    return;
+  }
+  if (event.state?.poolDetail) {
+    const pool = [...document.querySelectorAll("[data-pool]")].find((item) => item.dataset.pool === event.state.poolDetail);
+    if (pool) openPool(pool, pool, { pushHistory: false });
     return;
   }
   if (event.state?.productDetail) {
