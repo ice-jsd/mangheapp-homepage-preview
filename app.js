@@ -392,7 +392,7 @@ const drawPackCatalog = [
   {
     id: "flame-pack", name: "炎柱纪念卡包", ip: "鬼灭之刃", image: "./assets/draw-pack.png", packArt: "single", batchRemaining: 48, batchTotal: 72, updatedAt: "18:30", unitPrice: 20,
     themeName: "炎柱燃魂", vendor: "官方授权发行", saleState: "现货", fulfillment: "开奖后自动存入赏品柜", batch: "炎柱燃魂批次", benefits: ["正版授权", "现货发售"],
-    theme: { word: "燃魂", page: "#111839", surface: "#171f4d", accent: "#c43d2b", glow: "#f2b22e", ink: "#fffaf0", motif: "rgba(242,178,46,.18)" },
+    theme: { word: "燃魂", page: "#17162b", surface: "#2d2137", accent: "#c7463b", glow: "#f2a79d", soft: "#fbe9e5", ink: "#fff9f3", motif: "rgba(199,70,59,.16)" },
     offers: [{ id: "one", label: "1包", count: 1, price: 20, badge: "轻松试手" }, { id: "three", label: "3包", count: 3, price: 58, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 116, badge: "省 ¥4" }],
     catalog: [
       { name: "炼狱杏寿郎 · 果饮徽章", rarity: "稀有", image: "./assets/product-01.png", weight: 8 },
@@ -406,7 +406,7 @@ const drawPackCatalog = [
   {
     id: "film-pack", name: "胶片收藏卡包", ip: "纸房子", image: "./assets/product-paperhouse.svg", batchRemaining: 35, batchTotal: 60, updatedAt: "18:26", unitPrice: 18,
     themeName: "劫案胶片", vendor: "官方授权发行", saleState: "现货", fulfillment: "开奖后自动存入赏品柜", batch: "红金胶片批次", benefits: ["正版授权", "现货发售"],
-    theme: { word: "劫案", page: "#15171c", surface: "#292c33", accent: "#a72522", glow: "#d8a84e", ink: "#fffaf0", motif: "rgba(167,37,34,.22)" },
+    theme: { word: "劫案", page: "#19171b", surface: "#34272b", accent: "#a93c36", glow: "#dda19c", soft: "#f5e7e4", ink: "#fff9f3", motif: "rgba(169,60,54,.16)" },
     offers: [{ id: "one", label: "1包", count: 1, price: 18, badge: "单包体验" }, { id: "three", label: "3包", count: 3, price: 52, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 102, badge: "省 ¥6" }],
     catalog: [
       { name: "教授 · 金边胶片卡", rarity: "稀有", image: "./assets/product-paperhouse.svg", weight: 10 },
@@ -418,7 +418,7 @@ const drawPackCatalog = [
   {
     id: "galaxy-pack", name: "星河旅程卡包", ip: "盗墓笔记", image: "./assets/product-daomu.svg", batchRemaining: 18, batchTotal: 48, updatedAt: "18:21", unitPrice: 22,
     themeName: "星河旅程", vendor: "官方授权发行", saleState: "现货", fulfillment: "开奖后自动存入赏品柜", batch: "星河夜航批次", benefits: ["正版授权", "现货发售"],
-    theme: { word: "星河", page: "#071b34", surface: "#0d3550", accent: "#1a93a8", glow: "#d6b45d", ink: "#fffaf0", motif: "rgba(26,163,181,.2)" },
+    theme: { word: "星河", page: "#102333", surface: "#183b49", accent: "#247e91", glow: "#91d0d9", soft: "#e7f3f5", ink: "#fff9f3", motif: "rgba(36,126,145,.16)" },
     offers: [{ id: "one", label: "1包", count: 1, price: 22, badge: "单包体验" }, { id: "three", label: "3包", count: 3, price: 64, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 126, badge: "省 ¥6" }],
     catalog: [
       { name: "星河终点 · 镭射卡", rarity: "稀有", image: "./assets/product-daomu.svg", weight: 8 },
@@ -430,7 +430,7 @@ const drawPackCatalog = [
   {
     id: "healing-pack", name: "治愈森林卡包", ip: "罗小黑战记", image: "./assets/product-luoxiaohei.svg", batchRemaining: 54, batchTotal: 72, updatedAt: "18:18", unitPrice: 19,
     themeName: "治愈森林", vendor: "官方授权发行", saleState: "现货", fulfillment: "开奖后自动存入赏品柜", batch: "森林漫游批次", benefits: ["正版授权", "现货发售"],
-    theme: { word: "森林", page: "#0d2d26", surface: "#17483c", accent: "#69cda6", glow: "#d1ae4b", ink: "#fffaf0", motif: "rgba(105,205,166,.2)" },
+    theme: { word: "森林", page: "#173028", surface: "#285143", accent: "#397a64", glow: "#a6d4c3", soft: "#eaf3ef", ink: "#fff9f3", motif: "rgba(57,122,100,.16)" },
     offers: [{ id: "one", label: "1包", count: 1, price: 19, badge: "单包体验" }, { id: "three", label: "3包", count: 3, price: 55, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 108, badge: "省 ¥6" }],
     catalog: [
       { name: "小黑 · 月夜闪卡", rarity: "稀有", image: "./assets/product-luoxiaohei.svg", weight: 10 },
@@ -1743,6 +1743,7 @@ const drawThemeVariables = {
   surface: "--draw-theme-surface",
   accent: "--draw-theme-accent",
   glow: "--draw-theme-glow",
+  soft: "--draw-theme-soft",
   ink: "--draw-theme-ink",
   motif: "--draw-theme-motif",
 };

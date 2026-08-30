@@ -2482,7 +2482,7 @@ button:active,
 }
 
 /* Immersive draw scene v3 */
-.pool-draw-v2.is-draw-focus .scroll-view { overflow: hidden; background: #111839; }
+.pool-draw-v2.is-draw-focus .scroll-view { overflow: hidden; background: #17162b; }
 .pool-draw-v2.is-draw-focus .bottom-nav {
   visibility: hidden;
   opacity: 0;
@@ -2491,12 +2491,13 @@ button:active,
 }
 
 .pool-draw-v2 .draw-focus-v3 {
-  --draw-theme-page: #111839;
-  --draw-theme-surface: #171f4d;
-  --draw-theme-accent: #c43d2b;
-  --draw-theme-glow: #f2b22e;
-  --draw-theme-ink: #fffaf0;
-  --draw-theme-motif: rgba(242,178,46,.18);
+  --draw-theme-page: #17162b;
+  --draw-theme-surface: #2d2137;
+  --draw-theme-accent: #c7463b;
+  --draw-theme-glow: #f2a79d;
+  --draw-theme-soft: #fbe9e5;
+  --draw-theme-ink: #fff9f3;
+  --draw-theme-motif: rgba(199,70,59,.16);
   --draw-pack-width: clamp(208px,60.5vw,236px);
   position: relative;
   isolation: isolate;
@@ -2518,10 +2519,10 @@ button:active,
 
 .pool-draw-v2 .draw-scene-backdrop { position: absolute; z-index: 0; inset: 0; overflow: hidden; pointer-events: none; }
 .pool-draw-v2 .draw-scene-backdrop::after { position: absolute; inset: 0; content: ""; opacity: .46; }
-.pool-draw-v2 .draw-focus-v3[data-theme="flame-pack"] .draw-scene-backdrop::after { background: repeating-linear-gradient(164deg,transparent 0 30px,rgba(242,178,46,.09) 31px 33px,transparent 34px 52px); transform: skewY(-5deg) scale(1.15); }
-.pool-draw-v2 .draw-focus-v3[data-theme="film-pack"] .draw-scene-backdrop::after { inset: 66px 16px 174px; border-right: 8px dotted rgba(216,168,78,.16); border-left: 8px dotted rgba(216,168,78,.16); background: linear-gradient(90deg,transparent 48%,rgba(167,37,34,.12) 49% 51%,transparent 52%); }
-.pool-draw-v2 .draw-focus-v3[data-theme="galaxy-pack"] .draw-scene-backdrop::after { background: radial-gradient(circle at 18% 32%,rgba(214,180,93,.34) 0 2px,transparent 3px),radial-gradient(circle at 76% 21%,rgba(255,255,255,.25) 0 1px,transparent 2px),repeating-radial-gradient(ellipse at 70% 38%,transparent 0 42px,rgba(26,147,168,.1) 43px 44px,transparent 45px 72px); }
-.pool-draw-v2 .draw-focus-v3[data-theme="healing-pack"] .draw-scene-backdrop::after { background: repeating-linear-gradient(132deg,transparent 0 36px,rgba(105,205,166,.09) 37px 48px,transparent 49px 72px),radial-gradient(ellipse at 14% 58%,rgba(209,174,75,.11),transparent 34%); }
+.pool-draw-v2 .draw-focus-v3[data-theme="flame-pack"] .draw-scene-backdrop::after { background: repeating-linear-gradient(164deg,transparent 0 30px,rgba(242,167,157,.09) 31px 33px,transparent 34px 52px); transform: skewY(-5deg) scale(1.15); }
+.pool-draw-v2 .draw-focus-v3[data-theme="film-pack"] .draw-scene-backdrop::after { inset: 66px 16px 174px; border-right: 8px dotted rgba(221,161,156,.14); border-left: 8px dotted rgba(221,161,156,.14); background: linear-gradient(90deg,transparent 48%,rgba(169,60,54,.1) 49% 51%,transparent 52%); }
+.pool-draw-v2 .draw-focus-v3[data-theme="galaxy-pack"] .draw-scene-backdrop::after { background: radial-gradient(circle at 18% 32%,rgba(145,208,217,.28) 0 2px,transparent 3px),radial-gradient(circle at 76% 21%,rgba(255,255,255,.2) 0 1px,transparent 2px),repeating-radial-gradient(ellipse at 70% 38%,transparent 0 42px,rgba(36,126,145,.1) 43px 44px,transparent 45px 72px); }
+.pool-draw-v2 .draw-focus-v3[data-theme="healing-pack"] .draw-scene-backdrop::after { background: repeating-linear-gradient(132deg,transparent 0 36px,rgba(166,212,195,.08) 37px 48px,transparent 49px 72px),radial-gradient(ellipse at 14% 58%,rgba(166,212,195,.1),transparent 34%); }
 .pool-draw-v2 .draw-scene-backdrop::before {
   position: absolute;
   top: 27%;
@@ -2594,7 +2595,7 @@ button:active,
 }
 .pool-draw-v2 .draw-scene-intro { position: relative; z-index: 2; flex: 0 0 90px; padding: 4px 4px 0; animation: draw-v3-intro .42s ease both; }
 .pool-draw-v2 .draw-auth-line { display: flex; align-items: center; gap: 7px; }
-.pool-draw-v2 .draw-auth-line span { padding: 4px 7px; border-radius: 8px; color: #171f4d; background: var(--draw-theme-glow); font-size: 11px; font-weight: 900; }
+.pool-draw-v2 .draw-auth-line span { padding: 4px 7px; border-radius: 8px; color: var(--draw-theme-page); background: var(--draw-theme-glow); font-size: 11px; font-weight: 900; }
 .pool-draw-v2 .draw-auth-line b { color: rgba(255,250,240,.7); font-size: 11px; font-weight: 500; }
 .pool-draw-v2 .draw-scene-intro > p { margin: 7px 0 0; color: rgba(255,250,240,.7); font-size: 11px; line-height: 15px; }
 .pool-draw-v2 .draw-scene-intro h1 { margin: 2px 0 0; overflow: hidden; color: var(--draw-theme-ink); font-size: 23px; line-height: 30px; text-overflow: ellipsis; white-space: nowrap; }
@@ -2644,7 +2645,7 @@ button:active,
 .pool-draw-v2 .draw-carousel-indicators { position: absolute; z-index: 5; bottom: 22px; left: 50%; display: flex; gap: 5px; transform: translateX(-50%); }
 .pool-draw-v2 .draw-carousel-indicators i { width: 5px; height: 5px; border-radius: 5px; background: rgba(255,255,255,.3); }
 .pool-draw-v2 .draw-carousel-indicators i.is-active { width: 17px; background: var(--draw-theme-glow); }
-.pool-draw-v2 .draw-pack-carousel > strong { position: absolute; z-index: 5; right: 15px; bottom: 13px; padding: 5px 8px; border-radius: 8px; color: #171f4d; background: var(--draw-theme-glow); font-size: 11px; }
+.pool-draw-v2 .draw-pack-carousel > strong { position: absolute; z-index: 5; right: 15px; bottom: 13px; padding: 5px 8px; border-radius: 8px; color: var(--draw-theme-ink); background: var(--draw-theme-accent); font-size: 11px; }
 .pool-draw-v2 .draw-focus-v3.is-switching-left .draw-active-pack { animation: draw-v3-pack-left .28s ease both; }
 .pool-draw-v2 .draw-focus-v3.is-switching-right .draw-active-pack { animation: draw-v3-pack-right .28s ease both; }
 
@@ -2678,30 +2679,30 @@ button:active,
   padding: 11px 12px calc(11px + env(safe-area-inset-bottom));
   border-top: 1px solid rgba(23,31,77,.1);
   border-radius: 20px 20px 0 0;
-  color: #171f4d;
-  background: #fffaf0;
+  color: var(--draw-theme-page);
+  background: var(--draw-theme-soft);
   box-shadow: 0 -16px 34px rgba(3,8,28,.3);
 }
 .pool-draw-v2 .draw-purchase-heading { height: 38px; display: flex; align-items: flex-start; justify-content: space-between; }
 .pool-draw-v2 .draw-purchase-heading > div { display: flex; flex-direction: column-reverse; }
-.pool-draw-v2 .draw-purchase-heading span { color: #697089; font-size: 11px; line-height: 15px; }
+.pool-draw-v2 .draw-purchase-heading span { color: var(--draw-theme-surface); font-size: 11px; line-height: 15px; opacity: .72; }
 .pool-draw-v2 .draw-purchase-heading h2 { margin: 0; font-size: 15px; line-height: 19px; }
-.pool-draw-v2 .draw-purchase-heading > strong { color: #c43d2b; font-size: 14px; line-height: 22px; }
+.pool-draw-v2 .draw-purchase-heading > strong { color: var(--draw-theme-accent); font-size: 14px; line-height: 22px; }
 .pool-draw-v2 .draw-direct-offers { height: 82px; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
-.pool-draw-v2 .draw-direct-offers button { min-width: 0; min-height: 74px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 5px 3px; border: 1px solid #ddd7cd; border-radius: 14px; color: #171f4d; background: #fff; cursor: pointer; }
-.pool-draw-v2 .draw-direct-offers button:nth-child(2) { border-color: #c43d2b; color: #fff; background: #c43d2b; box-shadow: 0 8px 16px rgba(196,61,43,.18); }
+.pool-draw-v2 .draw-direct-offers button { min-width: 0; min-height: 74px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 5px 3px; border: 1px solid rgba(45,33,55,.16); border-radius: 14px; color: var(--draw-theme-page); background: rgba(255,255,255,.82); cursor: pointer; }
+.pool-draw-v2 .draw-direct-offers button:nth-child(2) { border-color: var(--draw-theme-accent); color: var(--draw-theme-ink); background: var(--draw-theme-accent); box-shadow: 0 8px 16px var(--draw-theme-motif); }
 .pool-draw-v2 .draw-direct-offers button:nth-child(2) small,
 .pool-draw-v2 .draw-direct-offers button:nth-child(2) b { color: #fff; }
-.pool-draw-v2 .draw-direct-offers button:nth-child(3) { border-color: #cbd0f4; color: #171f4d; background: #eef0ff; }
+.pool-draw-v2 .draw-direct-offers button:nth-child(3) { border-color: var(--draw-theme-accent); color: var(--draw-theme-page); background: var(--draw-theme-glow); }
 .pool-draw-v2 .draw-direct-offers button:nth-child(3) small,
-.pool-draw-v2 .draw-direct-offers button:nth-child(3) b { color: #3541b7; }
-.pool-draw-v2 .draw-direct-offers button:hover { border-color: #c43d2b; transform: translateY(-1px); }
+.pool-draw-v2 .draw-direct-offers button:nth-child(3) b { color: var(--draw-theme-page); }
+.pool-draw-v2 .draw-direct-offers button:hover { border-color: var(--draw-theme-accent); transform: translateY(-1px); }
 .pool-draw-v2 .draw-direct-offers button:disabled { color: #8d8c91; background: #ece9e3; cursor: not-allowed; filter: grayscale(1); transform: none; }
-.pool-draw-v2 .draw-direct-offers small { min-height: 15px; color: #c43d2b; font-size: 11px; line-height: 15px; }
+.pool-draw-v2 .draw-direct-offers small { min-height: 15px; color: var(--draw-theme-accent); font-size: 11px; line-height: 15px; }
 .pool-draw-v2 .draw-direct-offers button:disabled small,
 .pool-draw-v2 .draw-direct-offers button:disabled b { color: #777; }
 .pool-draw-v2 .draw-direct-offers strong { font-size: 13px; line-height: 17px; }
-.pool-draw-v2 .draw-direct-offers b { color: #c43d2b; font-size: 16px; line-height: 20px; }
+.pool-draw-v2 .draw-direct-offers b { color: var(--draw-theme-accent); font-size: 16px; line-height: 20px; }
 
 @keyframes draw-v3-intro { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes draw-v3-pack-left { from { opacity: .55; transform: translate(-44%,-50%) scale(.96); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
