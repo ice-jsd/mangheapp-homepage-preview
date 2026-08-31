@@ -385,7 +385,7 @@ img {
 
 .hero-card {
   position: relative;
-  width: 358px;
+  width: 100%;
   height: 152px;
   overflow: hidden;
   border-radius: 20px;
@@ -482,10 +482,10 @@ img {
 }
 
 .quick-actions {
-  width: 358px;
+  width: calc(100% - 32px);
   height: 152px;
   display: grid;
-  grid-template-columns: 105px 132px 105px;
+  grid-template-columns: minmax(0, 105fr) minmax(0, 132fr) minmax(0, 105fr);
   gap: 8px;
   align-items: center;
   margin: 0 16px;
@@ -559,7 +559,7 @@ img {
 
 .weekly-card {
   position: relative;
-  width: 358px;
+  width: 100%;
   height: 88px;
   overflow: hidden;
   border-radius: 18px;
