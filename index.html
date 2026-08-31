@@ -16,7 +16,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=h5-fluid-v8" />
+    <link rel="stylesheet" href="./styles.css?v=draw-offers-v9" />
   </head>
   <body>
     <div class="preview-stage">
@@ -393,14 +393,14 @@
                 <p id="drawCampaignMeta">每包独立随机，可能重复</p>
               </section>
 
-              <section class="draw-pack-carousel" id="drawPackPicker" aria-label="卡包轮播，使用左右方向键切换" tabindex="0">
-                <button class="draw-neighbor-pack is-previous" type="button" data-pack-neighbor="previous" aria-label="查看上一个卡包">
+              <section class="draw-pack-carousel" id="drawPackPicker" aria-label="卡包轮播，使用左右方向键切换">
+                <button class="draw-neighbor-pack is-previous" type="button" data-pack-neighbor="previous" tabindex="-1" aria-label="查看上一个卡包">
                   <span class="draw-pack-product is-placeholder" aria-hidden="true"><img src="./assets/product-luoxiaohei.svg" alt="" draggable="false" /></span>
                 </button>
                 <button class="pack-button draw-active-pack" type="button" data-preview-card aria-label="查看炎柱纪念卡包全部赏品">
                   <span class="draw-pack-product" aria-hidden="true"><img src="./assets/draw-pack.png" alt="" draggable="false" /><em class="draw-pack-series">炎柱燃魂 · 01</em></span>
                 </button>
-                <button class="draw-neighbor-pack is-next" type="button" data-pack-neighbor="next" aria-label="查看下一个卡包">
+                <button class="draw-neighbor-pack is-next" type="button" data-pack-neighbor="next" tabindex="-1" aria-label="查看下一个卡包">
                   <span class="draw-pack-product is-placeholder" aria-hidden="true"><img src="./assets/product-paperhouse.svg" alt="" draggable="false" /></span>
                 </button>
                 <div class="draw-carousel-indicators" id="drawCarouselIndicators" aria-hidden="true"></div>
@@ -675,6 +675,6 @@
         <div class="toast" id="toast" role="status" aria-live="polite"></div>
       </div>
     </div>
-    <script src="./app.js?v=draw-stage-v6" defer></script>
+    <script src="./app.js?v=draw-offers-v9" defer></script>
   </body>
 </html>

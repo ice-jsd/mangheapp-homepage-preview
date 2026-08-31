@@ -397,7 +397,7 @@ const drawPackCatalog = [
     id: "flame-pack", name: "炎柱纪念卡包", ip: "鬼灭之刃", image: "./assets/draw-pack.png", packArt: "single", batchRemaining: 48, batchTotal: 72, updatedAt: "18:30", unitPrice: 20,
     themeName: "炎柱燃魂", serial: "01", specification: "徽章 / 立牌", vendor: "官方授权发行", saleState: "现货", fulfillment: "开奖后自动存入赏品柜", batch: "炎柱燃魂批次", benefits: ["正版授权", "现货发售"],
     theme: { word: "燃魂", page: "#17162b", surface: "#2d2137", accent: "#c7463b", glow: "#f2a79d", soft: "#fbe9e5", ink: "#fff9f3", motif: "rgba(199,70,59,.16)" },
-    offers: [{ id: "one", label: "1包", count: 1, price: 20, badge: "轻松试手" }, { id: "three", label: "3包", count: 3, price: 58, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 116, badge: "省 ¥4" }],
+    offers: [{ id: "one", label: "1包", count: 1, price: 20, badge: "单包尝鲜" }, { id: "three", label: "3包", count: 3, price: 58, badge: "省 ¥2" }, { id: "box", label: "端盒", count: 6, price: 116, badge: "省 ¥4" }],
     catalog: [
       { prizeId: "flame-rengoku-badge", name: "炼狱杏寿郎 · 果饮徽章", rarity: "稀有", image: "./assets/product-01.png", weight: 8 },
       { prizeId: "flame-giyu-badge", name: "富冈义勇 · 果饮徽章", rarity: "闪卡", image: "./assets/product-07.png", weight: 14 },
@@ -411,7 +411,7 @@ const drawPackCatalog = [
     id: "film-pack", name: "胶片收藏卡包", ip: "纸房子", image: "./assets/product-paperhouse.svg", packArt: "placeholder", batchRemaining: 35, batchTotal: 60, updatedAt: "18:26", unitPrice: 18,
     themeName: "劫案胶片", serial: "02", specification: "胶片卡 / 票根", vendor: "官方授权发行", saleState: "现货", fulfillment: "开奖后自动存入赏品柜", batch: "红金胶片批次", benefits: ["正版授权", "现货发售"],
     theme: { word: "劫案", page: "#19171b", surface: "#34272b", accent: "#a93c36", glow: "#dda19c", soft: "#f5e7e4", ink: "#fff9f3", motif: "rgba(169,60,54,.16)" },
-    offers: [{ id: "one", label: "1包", count: 1, price: 18, badge: "单包体验" }, { id: "three", label: "3包", count: 3, price: 52, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 102, badge: "省 ¥6" }],
+    offers: [{ id: "one", label: "1包", count: 1, price: 18, badge: "单包尝鲜" }, { id: "three", label: "3包", count: 3, price: 52, badge: "省 ¥2" }, { id: "box", label: "端盒", count: 6, price: 102, badge: "省 ¥6" }],
     catalog: [
       { prizeId: "film-professor-gold", name: "教授 · 金边胶片卡", rarity: "稀有", image: "./assets/product-paperhouse.svg", weight: 10 },
       { prizeId: "film-tokyo-card", name: "东京 · 角色胶片卡", rarity: "闪卡", image: "./assets/product-05.png", weight: 20 },
@@ -423,7 +423,7 @@ const drawPackCatalog = [
     id: "galaxy-pack", name: "星河旅程卡包", ip: "盗墓笔记", image: "./assets/product-daomu.svg", packArt: "placeholder", batchRemaining: 18, batchTotal: 48, updatedAt: "18:21", unitPrice: 22,
     themeName: "星河旅程", serial: "03", specification: "镭射卡 / 夜光卡", vendor: "官方授权发行", saleState: "现货", fulfillment: "开奖后自动存入赏品柜", batch: "星河夜航批次", benefits: ["正版授权", "现货发售"],
     theme: { word: "星河", page: "#102333", surface: "#183b49", accent: "#247e91", glow: "#91d0d9", soft: "#e7f3f5", ink: "#fff9f3", motif: "rgba(36,126,145,.16)" },
-    offers: [{ id: "one", label: "1包", count: 1, price: 22, badge: "单包体验" }, { id: "three", label: "3包", count: 3, price: 64, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 126, badge: "省 ¥6" }],
+    offers: [{ id: "one", label: "1包", count: 1, price: 22, badge: "单包尝鲜" }, { id: "three", label: "3包", count: 3, price: 64, badge: "省 ¥2" }, { id: "box", label: "端盒", count: 6, price: 126, badge: "省 ¥6" }],
     catalog: [
       { prizeId: "galaxy-terminal-holo", name: "星河终点 · 镭射卡", rarity: "稀有", image: "./assets/product-daomu.svg", weight: 8 },
       { prizeId: "galaxy-team-glow", name: "主角团 · 夜光卡", rarity: "闪卡", image: "./assets/product-06.png", weight: 22 },
@@ -435,7 +435,7 @@ const drawPackCatalog = [
     id: "healing-pack", name: "治愈森林卡包", ip: "罗小黑战记", image: "./assets/product-luoxiaohei.svg", packArt: "placeholder", batchRemaining: 54, batchTotal: 72, updatedAt: "18:18", unitPrice: 19,
     themeName: "治愈森林", serial: "04", specification: "闪卡 / 收藏卡", vendor: "官方授权发行", saleState: "现货", fulfillment: "开奖后自动存入赏品柜", batch: "森林漫游批次", benefits: ["正版授权", "现货发售"],
     theme: { word: "森林", page: "#173028", surface: "#285143", accent: "#397a64", glow: "#a6d4c3", soft: "#eaf3ef", ink: "#fff9f3", motif: "rgba(57,122,100,.16)" },
-    offers: [{ id: "one", label: "1包", count: 1, price: 19, badge: "单包体验" }, { id: "three", label: "3包", count: 3, price: 55, badge: "省 ¥2" }, { id: "box", label: "整盒", count: 6, price: 108, badge: "省 ¥6" }],
+    offers: [{ id: "one", label: "1包", count: 1, price: 19, badge: "单包尝鲜" }, { id: "three", label: "3包", count: 3, price: 55, badge: "省 ¥2" }, { id: "box", label: "端盒", count: 6, price: 108, badge: "省 ¥6" }],
     catalog: [
       { prizeId: "healing-xiaohei-night", name: "小黑 · 月夜闪卡", rarity: "稀有", image: "./assets/product-luoxiaohei.svg", weight: 10 },
       { prizeId: "healing-wuxian-trip", name: "无限 · 旅途卡", rarity: "闪卡", image: "./assets/product-08.png", weight: 20 },
@@ -1802,6 +1802,7 @@ const drawResultGrid = document.querySelector("#drawResultGrid");
 const drawPackPicker = document.querySelector("#drawPackPicker");
 const drawOfferList = document.querySelector("#drawOfferList");
 const drawDockTotal = document.querySelector("#drawDockTotal");
+const drawCountTitle = document.querySelector("#drawCountTitle");
 const drawOpeningPanel = document.querySelector("[data-opening-panel]");
 const drawRevealPanel = document.querySelector("[data-reveal-panel]");
 const drawResultPanel = document.querySelector("[data-result-panel]");
@@ -1892,6 +1893,36 @@ const drawThemeVariables = {
   ink: "--draw-theme-ink",
   motif: "--draw-theme-motif",
 };
+const drawOfferVisualClasses = Object.freeze({
+  one: "is-one",
+  three: "is-three",
+  box: "is-box",
+});
+
+function drawOfferVisualClass(offerId) {
+  return drawOfferVisualClasses[offerId] || "is-other";
+}
+
+function drawOfferVisibleLabel(offer) {
+  if (offer.id === "box") return `端盒 · ${offer.count}包`;
+  return `${offer.count}包`;
+}
+
+function drawOfferQuote(pack, offer) {
+  const subtotal = offer.count * pack.unitPrice;
+  const discount = Math.max(0,subtotal - offer.price);
+  return { subtotal,discount };
+}
+
+function drawOfferAriaLabel(pack, offer, available) {
+  const label = drawOfferVisibleLabel(offer);
+  if (!available) return `${label}，库存不足`;
+  const { subtotal,discount } = drawOfferQuote(pack,offer);
+  const priceParts = discount > 0
+    ? `原价 ${formatMoney(subtotal)} 元，优惠 ${formatMoney(discount)} 元，实付 ${formatMoney(offer.price)} 元`
+    : `实付 ${formatMoney(offer.price)} 元`;
+  return `${label}，${priceParts}，进入支付确认${offer.id === "box" ? "，推荐档位" : ""}`;
+}
 
 function currentDrawPack() {
   return drawPackById.get(activeDrawPackId) || drawPackCatalog[0];
@@ -1904,10 +1935,14 @@ function currentDrawOffer() {
 
 function updateDrawSelection() {
   const pack = currentDrawPack();
-  const offer = currentDrawOffer();
   const position = drawPackCatalog.findIndex((item) => item.id === pack.id) + 1;
-  drawDockTotal.textContent = `¥${pack.unitPrice} 起`;
-  drawStageSelection.textContent = `第 ${position}/${drawPackCatalog.length} 个，${pack.ip}，${pack.name}，${offer.label} ${offer.price} 元`;
+  const soldOut = pack.batchRemaining <= 0;
+  const minimumPrice = Math.min(...pack.offers.filter((offer) => offer.count <= pack.batchRemaining).map((offer) => offer.price),pack.unitPrice);
+  drawCountTitle.textContent = soldOut ? "当前批次状态" : "选择开包数量";
+  drawDockTotal.textContent = soldOut ? "已售罄" : `¥${formatMoney(minimumPrice)} 起`;
+  drawStageSelection.textContent = soldOut
+    ? `第 ${position}/${drawPackCatalog.length} 个，${pack.ip}，${pack.name}，当前批次已售罄`
+    : `第 ${position}/${drawPackCatalog.length} 个，${pack.ip}，${pack.name}，最低 ${formatMoney(minimumPrice)} 元起`;
 }
 
 function applyDrawTheme(pack) {
@@ -1961,21 +1996,24 @@ function renderDrawPack(packId = activeDrawPackId, { updateRoute = true, animate
   drawTopbarIp.textContent = pack.ip;
   drawVendorLine.textContent = "抽取后自动入柜";
   drawActivePack.setAttribute("aria-label", `查看${pack.name}全部赏品`);
+  drawActivePack.tabIndex = 0;
   renderDrawPackShell(drawActivePack, pack);
   document.querySelector("#drawPackPrice").textContent = `¥${pack.unitPrice} / 包`;
   drawStageFacts.innerHTML = `<span>全 ${pack.catalog.length} 款</span><span>稀有 ${rareRate}%</span><span id="drawPackAvailability" title="更新 ${pack.updatedAt}">剩余 ${pack.batchRemaining}/${pack.batchTotal} 包</span>`;
   [[drawPreviousPack, neighbors.previous], [drawNextPack, neighbors.next]].forEach(([button, item]) => {
     button.dataset.packId = item.id;
+    button.tabIndex = -1;
     button.setAttribute("aria-label", `切换到${item.ip}，${item.name}`);
     renderDrawPackShell(button, item);
   });
   drawCarouselIndicators.innerHTML = drawPackCatalog.map((item) => `<i class="${item.id === pack.id ? "is-active" : ""}"></i>`).join("");
-  drawOfferList.innerHTML = pack.batchRemaining <= 0 ? `<button type="button" class="draw-sold-out-action" data-open-pack-menu><small>本批次已售罄</small><strong>切换其他卡包</strong></button>` : pack.offers.map((offer) => {
+  drawOfferList.innerHTML = pack.batchRemaining <= 0 ? `<button type="button" class="draw-sold-out-action" data-open-pack-menu aria-haspopup="dialog" aria-controls="drawInfoSheet"><small>本批次已售罄</small><strong>切换其他卡包</strong></button>` : pack.offers.map((offer) => {
     const available = offer.count <= pack.batchRemaining;
-    const discount = offer.count * pack.unitPrice - offer.price;
-    const benefit = available ? (discount > 0 ? `省 ¥${formatMoney(discount)}` : offer.badge || "单包体验") : "库存不足";
-    const visibleLabel = offer.id === "box" ? `${offer.label} · ${offer.count}包` : offer.label;
-    return `<button type="button" data-draw-offer="${escapeHtml(offer.id)}" ${available ? "" : "disabled"} aria-label="${available ? `${escapeHtml(visibleLabel)}，${offer.price}元，进入支付确认` : `${escapeHtml(visibleLabel)}，库存不足`}"><small>${escapeHtml(benefit)}</small><strong>${escapeHtml(visibleLabel)}</strong><b>¥${formatMoney(offer.price)}</b></button>`;
+    const { discount } = drawOfferQuote(pack,offer);
+    const benefit = available ? (discount > 0 ? `省 ¥${formatMoney(discount)}` : "单包尝鲜") : "库存不足";
+    const visibleLabel = drawOfferVisibleLabel(offer);
+    const dialogAttributes = available ? 'aria-haspopup="dialog" aria-controls="drawConfirmSheet"' : "";
+    return `<button type="button" class="${drawOfferVisualClass(offer.id)}" data-draw-offer="${escapeHtml(offer.id)}" ${available ? "" : "disabled"} ${dialogAttributes} aria-label="${escapeHtml(drawOfferAriaLabel(pack,offer,available))}"><small>${escapeHtml(benefit)}</small><strong>${escapeHtml(visibleLabel)}</strong><b>¥${formatMoney(offer.price)}</b></button>`;
   }).join("");
   pageDraw.classList.toggle("is-sold-out", pack.batchRemaining <= 0);
   updateDrawSelection();
@@ -2007,7 +2045,8 @@ function createDrawOrder({ sourceType, sourceId, offerId, trigger }) {
   const pack = drawPackById.get(sourceId);
   const offer = pack.offers.find((item) => item.id === offerId) || pack.offers[0];
   const subtotal = offer.count * pack.unitPrice;
-  return { sourceType, sourceId, offerId: offer.id, label: offer.label, count: offer.count, unitPrice: pack.unitPrice, price: offer.price, subtotal, discount: subtotal - offer.price, available: offer.count <= pack.batchRemaining, trigger, sourceName: pack.name, sourceIp: pack.ip, sourceImage: pack.image, meta: `${offer.label} · 每包随机 1 款` };
+  const visibleLabel = drawOfferVisibleLabel(offer);
+  return { sourceType, sourceId, offerId: offer.id, label: visibleLabel, count: offer.count, unitPrice: pack.unitPrice, price: offer.price, subtotal, discount: subtotal - offer.price, available: offer.count <= pack.batchRemaining, trigger, sourceName: pack.name, sourceIp: pack.ip, sourceImage: pack.image, meta: `${visibleLabel} · 每包随机 1 款` };
 }
 
 function refreshDrawOrder(draw) {
@@ -2031,8 +2070,8 @@ function renderDrawConfirmation(draw) {
   drawConfirmName.textContent = draw.sourceName;
   drawConfirmMeta.textContent = draw.meta || `${draw.label} · 每包随机 1 款`;
   drawConfirmPlay.textContent = `${draw.sourceType === "pool" ? "有限赏" : "抽卡机"} · ${draw.sourceIp}`;
-  drawConfirmQuantity.parentElement.querySelector("span").textContent = draw.sourceType === "pool" ? "赏箱 / 次数" : "卡包 / 数量";
-  drawConfirmQuantity.textContent = draw.sourceType === "pool" ? `第 ${draw.boxNumber} 箱 · ${draw.count} 抽` : `卡包 · ${draw.count} 包`;
+  drawConfirmQuantity.parentElement.querySelector("span").textContent = draw.sourceType === "pool" ? "赏箱 / 次数" : "购买档位";
+  drawConfirmQuantity.textContent = draw.sourceType === "pool" ? `第 ${draw.boxNumber} 箱 · ${draw.count} 抽` : (draw.label || `${draw.count}包`);
   drawConfirmUnitPrice.textContent = `¥${formatMoney(draw.unitPrice)} / ${draw.sourceType === "pool" ? "抽" : "包"}`;
   drawConfirmPrice.textContent = `¥${formatMoney(draw.price)}`;
   drawConfirmSubtotal.textContent = `¥${formatMoney(draw.subtotal)}`;
@@ -2655,36 +2694,36 @@ drawPackPicker.addEventListener("click", (event) => {
 });
 
 drawPackPicker.addEventListener("keydown", (event) => {
-  if ((event.key === "Enter" || event.key === " ") && event.target === drawPackPicker) {
-    event.preventDefault();
-    openDrawInfo("catalog",drawPackPicker);
-    return;
-  }
+  if (event.target !== drawActivePack) return;
   if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
   event.preventDefault();
   const direction = event.key === "ArrowLeft" ? -1 : 1;
   const neighbor = direction < 0 ? drawPreviousPack : drawNextPack;
   selectDrawPack(neighbor.dataset.packId, { direction });
+  drawActivePack.focus({ preventScroll: true });
 });
 
 drawPackPicker.addEventListener("pointerdown", (event) => {
   if (event.pointerType === "mouse" && event.button !== 0) return;
-  if (event.clientX <= 24 || event.clientX >= window.innerWidth - 24) return;
-  drawPointerState = { phase: "pending-axis", pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, lastX: event.clientX, lastTime: performance.now(), velocityX: 0, target: event.target };
+  const pickerBounds = drawPackPicker.getBoundingClientRect();
+  if (event.clientX <= pickerBounds.left + 24 || event.clientX >= pickerBounds.right - 24) return;
+  const now = performance.now();
+  drawPointerState = { phase: "pending-axis", pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, startTime: now, maxDistance: 0, lastX: event.clientX, lastTime: now, velocityX: 0, target: event.target };
 });
 
 drawPackPicker.addEventListener("pointermove", (event) => {
   if (!drawPointerState || drawPointerState.pointerId !== event.pointerId) return;
   const distanceX = event.clientX - drawPointerState.startX;
   const distanceY = event.clientY - drawPointerState.startY;
+  drawPointerState.maxDistance = Math.max(drawPointerState.maxDistance,Math.hypot(distanceX,distanceY));
   if (drawPointerState.phase === "pending-axis") {
     if (Math.hypot(distanceX,distanceY) < 8) return;
-    if (Math.abs(distanceX) >= 10 && Math.abs(distanceX) >= Math.abs(distanceY) * 1.2) {
+    if (Math.abs(distanceX) >= 10 && Math.abs(distanceX) > Math.abs(distanceY) * 1.2) {
       drawPointerState.phase = "horizontal-drag";
       drawPackPicker.classList.add("is-dragging");
       try { drawPackPicker.setPointerCapture(event.pointerId); } catch { /* Pointer capture is an enhancement. */ }
-    } else if (Math.abs(distanceY) > Math.abs(distanceX)) {
-      drawPointerState = null;
+    } else if (Math.abs(distanceY) >= 8 && Math.abs(distanceY) > Math.abs(distanceX) * 1.2) {
+      drawPointerState.phase = "vertical-scroll";
       return;
     }
   }
@@ -2722,9 +2761,19 @@ function finishDrawPointer(event, cancelled = false) {
   const pointerState = drawPointerState;
   const distanceX = event.clientX - pointerState.startX;
   const distanceY = event.clientY - pointerState.startY;
+  const elapsed = performance.now() - pointerState.startTime;
+  const moved = Math.max(pointerState.maxDistance,Math.hypot(distanceX,distanceY));
   clearDrawPointer(event.pointerId);
   if (cancelled) return;
+  if (pointerState.phase === "vertical-scroll") {
+    drawSuppressClickUntil = performance.now() + 500;
+    return;
+  }
   if (pointerState.phase !== "horizontal-drag") {
+    if (moved > 8 || elapsed > 350) {
+      drawSuppressClickUntil = performance.now() + 500;
+      return;
+    }
     const neighborButton = pointerState.target.closest?.("[data-pack-neighbor]");
     const activeButton = pointerState.target.closest?.("[data-preview-card]");
     if (neighborButton) {
@@ -2737,7 +2786,7 @@ function finishDrawPointer(event, cancelled = false) {
     }
     return;
   }
-  const threshold = drawPackPicker.getBoundingClientRect().width * .22;
+  const threshold = Math.min(64,drawPackPicker.getBoundingClientRect().width * .18);
   const releaseVelocity = performance.now() - pointerState.lastTime <= 80 ? pointerState.velocityX : 0;
   if (Math.abs(distanceX) < threshold && Math.abs(releaseVelocity) < .45) return;
   drawSuppressClickUntil = performance.now() + 500;
@@ -2760,6 +2809,7 @@ window.addEventListener("resize",() => {
   if (drawPointerState) clearDrawPointer(drawPointerState.pointerId);
 });
 
+let drawOfferActivationPending = false;
 drawOfferList.addEventListener("click", (event) => {
   const packMenuButton = event.target.closest("[data-open-pack-menu]");
   if (packMenuButton) {
@@ -2767,10 +2817,21 @@ drawOfferList.addEventListener("click", (event) => {
     return;
   }
   const button = event.target.closest("[data-draw-offer]");
-  if (!button || button.disabled || drawPaymentPending || activeDialog) return;
+  if (!button || button.disabled || drawPaymentPending || drawOfferActivationPending || activeDialog) return;
+  drawOfferActivationPending = true;
   activeDrawOfferId = button.dataset.drawOffer;
-  updateDrawSelection();
-  openDrawConfirmation(createDrawOrder({ sourceType: "pack", sourceId: activeDrawPackId, offerId: activeDrawOfferId, trigger: button }));
+  const drawOrder = createDrawOrder({ sourceType: "pack", sourceId: activeDrawPackId, offerId: activeDrawOfferId, trigger: button });
+  button.classList.add("is-processing");
+  button.setAttribute("aria-busy","true");
+  window.requestAnimationFrame(() => {
+    try {
+      openDrawConfirmation(drawOrder);
+    } finally {
+      button.classList.remove("is-processing");
+      button.removeAttribute("aria-busy");
+      drawOfferActivationPending = false;
+    }
+  });
 });
 
 function handleDrawBack() {
@@ -3267,11 +3328,19 @@ window.addEventListener("popstate", (event) => {
       return;
     }
     if (drawTransactionPhase === "completed") {
+      const completedSourceType = lastCompletedDraw?.sourceType || lastDrawTriggerKey?.sourceType;
+      const completedOfferId = lastCompletedDraw?.offerId || lastDrawTriggerKey?.offerId;
       closeDialog({ restoreFocus: false,force: true,updateHistory: false });
       drawConfirmHistoryOpen = false;
       drawTransactionPhase = "idle";
       window.history.replaceState(null,"",safeHash);
       routeFromHash({ instant: true });
+      window.setTimeout(() => {
+        const focusTarget = completedSourceType === "pool"
+          ? enterPoolButton
+          : drawOfferList.querySelector(`[data-draw-offer="${completedOfferId || ""}"]`);
+        focusTarget?.focus({ preventScroll: true });
+      },0);
       return;
     }
     cancelDrawTransaction({ clearOrder: true });
